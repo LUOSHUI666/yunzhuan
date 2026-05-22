@@ -20,15 +20,259 @@
   视觉铁律：禁用纯白、高饱和现代色，贯穿暗金/朱砂/青铜/竹简
 ============================================================ -->
 <style data-module="theme">
-  /* ── CSS Custom Properties ── */
-  /* ── 全局重置 ── */
-  /* ── 背景星图 ── */
-  /* ── 罗盘组件 ── */
-  /* ── 环形全览面板 ── */
-  /* ── 令牌组 ── */
-  /* ── 解读卡片 ── */
-  /* ── 粒子层 ── */
-  /* ── 动画关键帧 ── */
+  /* ═══════════════════════════════════════════════════
+     CSS Custom Properties
+     ═══════════════════════════════════════════════════ */
+  :root {
+    --bg-deep: #0D0D14;
+    --gold-dark: #8B7355;
+    --gold: #B8860B;
+    --gold-light: #DAA520;
+    --cinnabar: #C41E3A;
+    --cinnabar-light: #E23D3D;
+    --bronze: #6B3A2A;
+    --bronze-light: #8B5A3C;
+    --bamboo: #F0EAD6;
+    --bamboo-dark: #E0D5C0;
+    --ink: #2C1810;
+    --ink-light: #4A3728;
+    --font-title: 'LiSu', '楷体', 'KaiTi', 'STKaiti', serif;
+    --font-body: 'SimSun', '宋体', 'STSong', 'FangSong', '仿宋', serif;
+    --easing: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* ═══════════════════════════════════════════════════
+     全局重置
+     ═══════════════════════════════════════════════════ */
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background: var(--bg-deep);
+    font-family: var(--font-body);
+    color: var(--bamboo);
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: default;
+  }
+
+  /* ═══════════════════════════════════════════════════
+     背景星图
+     ═══════════════════════════════════════════════════ */
+  #starfield {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .star-layer {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    border-radius: 50%;
+    animation: starRotate var(--speed) linear infinite;
+  }
+
+  .star-layer:nth-child(2) { animation-direction: reverse; }
+  .star-layer:nth-child(3) { animation-direction: reverse; }
+
+  @keyframes starRotate {
+    from { transform: translate(-50%, -50%) rotate(0deg); }
+    to   { transform: translate(-50%, -50%) rotate(360deg); }
+  }
+
+  /* ═══════════════════════════════════════════════════
+     主舞台
+     ═══════════════════════════════════════════════════ */
+  #stage {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 32px;
+  }
+
+  /* ═══════════════════════════════════════════════════
+     罗盘组件
+     ═══════════════════════════════════════════════════ */
+  .compass {
+    position: relative;
+    width: 300px;
+    height: 300px;
+    flex-shrink: 0;
+    order: 1;
+  }
+
+  .compass-ring {
+    position: absolute;
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    pointer-events: none;
+  }
+
+  .compass-ring--outer {
+    width: 300px;
+    height: 300px;
+    margin: -150px 0 0 -150px;
+    border: 2px solid var(--gold-dark);
+    box-shadow:
+      0 0 30px rgba(184, 134, 11, 0.12),
+      inset 0 0 30px rgba(184, 134, 11, 0.06);
+  }
+
+  .compass-ring--mid {
+    width: 260px;
+    height: 260px;
+    margin: -130px 0 0 -130px;
+    border: 1px dashed var(--bronze-light);
+    opacity: 0.5;
+  }
+
+  .compass-ring--inner {
+    width: 220px;
+    height: 220px;
+    margin: -110px 0 0 -110px;
+    border: 1px solid var(--bronze);
+    opacity: 0.4;
+  }
+
+  /* 中心文字圆 */
+  .compass-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 170px;
+    height: 170px;
+    margin: -85px 0 0 -85px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 45% 40%, #1a1a2e, var(--bg-deep) 70%);
+    border: 1px solid rgba(139, 115, 85, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-title);
+    font-size: 48px;
+    color: var(--gold-light);
+    letter-spacing: 6px;
+    text-shadow: 0 0 20px rgba(218, 165, 32, 0.3);
+    transition: color 0.15s ease, text-shadow 0.15s ease;
+    z-index: 2;
+    overflow: hidden;
+  }
+
+  /* 十字准线 */
+  .compass-center::before,
+  .compass-center::after {
+    content: '';
+    position: absolute;
+    background: var(--bronze);
+    opacity: 0.2;
+  }
+
+  .compass-center::before {
+    width: 1px;
+    height: 60%;
+  }
+
+  .compass-center::after {
+    width: 60%;
+    height: 1px;
+  }
+
+  /* 文字切换动画 */
+  .compass-center.text-switching {
+    color: var(--gold);
+    text-shadow: 0 0 30px rgba(218, 165, 32, 0.5);
+  }
+
+  /* ═══════════════════════════════════════════════════
+     八卦爻符
+     ═══════════════════════════════════════════════════ */
+  .trigram {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    font-family: var(--font-title);
+    font-size: 22px;
+    color: var(--gold-dark);
+    transform:
+      translate(-50%, -50%)
+      rotate(var(--a))
+      translateY(-140px)
+      rotate(calc(-1 * var(--a)));
+    pointer-events: none;
+    text-shadow: 0 0 8px rgba(184, 134, 11, 0.2);
+  }
+
+  /* ═══════════════════════════════════════════════════
+     青铜箭头
+     ═══════════════════════════════════════════════════ */
+  .arrow {
+    width: 0;
+    height: 0;
+    cursor: pointer;
+    transition: filter 0.2s var(--easing), opacity 0.2s var(--easing);
+    flex-shrink: 0;
+  }
+
+  .arrow--left {
+    order: 0;
+    border-top: 18px solid transparent;
+    border-bottom: 18px solid transparent;
+    border-right: 28px solid var(--bronze-light);
+    filter: drop-shadow(0 0 4px rgba(139, 90, 60, 0.4));
+  }
+
+  .arrow--right {
+    order: 2;
+    border-top: 18px solid transparent;
+    border-bottom: 18px solid transparent;
+    border-left: 28px solid var(--bronze-light);
+    filter: drop-shadow(0 0 4px rgba(139, 90, 60, 0.4));
+  }
+
+  .arrow:hover {
+    filter: drop-shadow(0 0 12px var(--bronze-light));
+  }
+
+  .arrow:active {
+    opacity: 0.7;
+  }
+
+  /* ═══════════════════════════════════════════════════
+     环形全览面板（预留，Step 2 实现）
+     ═══════════════════════════════════════════════════ */
+
+  /* ═══════════════════════════════════════════════════
+     令牌组（预留，Step 2 实现）
+     ═══════════════════════════════════════════════════ */
+
+  /* ═══════════════════════════════════════════════════
+     解读卡片（预留，Step 4 实现）
+     ═══════════════════════════════════════════════════ */
+
+  /* ═══════════════════════════════════════════════════
+     粒子层（预留，Step 3 实现）
+     ═══════════════════════════════════════════════════ */
+
+  /* ═══════════════════════════════════════════════════
+     动画关键帧（后续步骤追加）
+     ═══════════════════════════════════════════════════ */
+
+  /* ═══════════════════════════════════════════════════
+     无障碍
+     ═══════════════════════════════════════════════════ */
+  @media (prefers-reduced-motion: reduce) {
+    .star-layer { animation: none !important; }
+    .compass-center { transition: none !important; }
+    .arrow { transition: none !important; }
+  }
 </style>
 </head>
 <body>
@@ -57,9 +301,44 @@
   编辑此区域即可调整交互参数，无需触碰逻辑代码
 ============================================================ -->
 <script data-module="config">
-  // ── 全局常量 ──
-  // ── 令牌列表（固定六字，不可更改） ──
-  // ── MBTI 16 型列表 ──
+  /* ═══════════════════════════════════════════════════
+     全局常量
+     ═══════════════════════════════════════════════════ */
+  const COMPASS_SPEED = 30;
+  const PARTICLE_COUNT = 20;
+  const TYPEWRITER_SPEED_TEXT = 50;
+  const TYPEWRITER_SPEED_TIME = 80;
+  const TOKEN_FLOAT_AMPLITUDE = 6;
+
+  /* ═══════════════════════════════════════════════════
+     令牌列表（六字固定）
+     ═══════════════════════════════════════════════════ */
+  const TOKENS = ['迷途', '坎', '执', '散', '渊', '生'];
+
+  /* ═══════════════════════════════════════════════════
+     MBTI 16 型
+     ═══════════════════════════════════════════════════ */
+  const MBTI_TYPES = [
+    'INFP', 'INFJ', 'INTJ', 'ENFP',
+    'ENFJ', 'ENTJ', 'ESFP', 'ESFJ',
+    'ESTP', 'ESTJ', 'ISFP', 'ISFJ',
+    'ISTP', 'ISTJ', 'INTP', 'ENTP'
+  ];
+  const DEFAULT_MBTI = 'INFP';
+
+  /* ═══════════════════════════════════════════════════
+     星图参数
+     ═══════════════════════════════════════════════════ */
+  const STAR_LAYERS = [
+    { count: 120, size: 1, opacity: 0.25, speed: 120 },
+    { count: 60,  size: 2, opacity: 0.40, speed: 180 },
+    { count: 25,  size: 2.5, opacity: 0.55, speed: 240 }
+  ];
+
+  /* ═══════════════════════════════════════════════════
+     八卦爻符字符
+     ═══════════════════════════════════════════════════ */
+  const TRIGRAMS = ['☰', '☱', '☲', '☳', '☴', '☵', '☶', '☷'];
 </script>
 
 <!-- ============================================================
@@ -89,11 +368,91 @@
   每个选项的 (x, y) = (cx + R*cos(θ), cy + R*sin(θ))
 ============================================================ -->
 <script data-module="render">
-  // ── 背景星图 ──
-  // ── 罗盘组件 ──
-  // ── 环形全览面板 ──
-  // ── 令牌组 ──
-  // ── 解读卡片 ──
+  /* ═══════════════════════════════════════════════════
+     背景星图
+     ═══════════════════════════════════════════════════ */
+  function createStarfield() {
+    const container = document.getElementById('starfield');
+    if (!container) return;
+
+    STAR_LAYERS.forEach(function (layer) {
+      var div = document.createElement('div');
+      div.className = 'star-layer';
+      div.style.setProperty('--speed', layer.speed + 's');
+
+      var shadows = [];
+      for (var i = 0; i < layer.count; i++) {
+        var x = (Math.random() * 800 - 400).toFixed(1);
+        var y = (Math.random() * 800 - 400).toFixed(1);
+        shadows.push(x + 'px ' + y + 'px 0 ' + layer.size + 'px rgba(218,165,32,' + layer.opacity + ')');
+      }
+      div.style.boxShadow = shadows.join(', ');
+      div.style.width = layer.size + 'px';
+      div.style.height = layer.size + 'px';
+
+      container.appendChild(div);
+    });
+  }
+
+  /* ═══════════════════════════════════════════════════
+     罗盘组件
+     ═══════════════════════════════════════════════════ */
+  function renderCompass() {
+    var stage = document.getElementById('stage');
+    if (!stage) return;
+
+    /* ── 罗盘容器 ── */
+    var compass = document.createElement('div');
+    compass.className = 'compass';
+    compass.id = 'compass';
+
+    /* ── 三层同心环 ── */
+    ['outer', 'mid', 'inner'].forEach(function (tier) {
+      var ring = document.createElement('div');
+      ring.className = 'compass-ring compass-ring--' + tier;
+      compass.appendChild(ring);
+    });
+
+    /* ── 八卦爻符 ── */
+    TRIGRAMS.forEach(function (char, i) {
+      var span = document.createElement('span');
+      span.className = 'trigram';
+      span.textContent = char;
+      var angle = (i / 8) * 2 * Math.PI - Math.PI / 2;
+      span.style.setProperty('--a', angle + 'rad');
+      compass.appendChild(span);
+    });
+
+    /* ── 中心文字圆 ── */
+    var center = document.createElement('div');
+    center.className = 'compass-center';
+    center.id = 'mbti-display';
+    center.textContent = DEFAULT_MBTI;
+    compass.appendChild(center);
+
+    stage.appendChild(compass);
+  }
+
+  /* ── 箭头按钮 ── */
+  function renderArrows() {
+    var stage = document.getElementById('stage');
+    if (!stage) return;
+
+    var left = document.createElement('div');
+    left.className = 'arrow arrow--left';
+    left.id = 'arrow-left';
+
+    var right = document.createElement('div');
+    right.className = 'arrow arrow--right';
+    right.id = 'arrow-right';
+
+    stage.appendChild(left);
+    stage.appendChild(right);
+  }
+
+  /* ── 环形全览面板（预留） ── */
+  /* ── 令牌组（预留） ── */
+  /* ── 解读卡片（预留） ── */
 </script>
 
 <!-- ============================================================
@@ -124,10 +483,76 @@
     入口：init()
 ============================================================ -->
 <script data-module="app">
-  // ── 全局状态 ──
-  // ── 事件绑定 ──
-  // ── updateUI() 统一刷新 ──
-  // ── init() 入口 ──
+  /* ═══════════════════════════════════════════════════
+     全局状态
+     ═══════════════════════════════════════════════════ */
+  var currentIndex = MBTI_TYPES.indexOf(DEFAULT_MBTI);
+
+  /* ═══════════════════════════════════════════════════
+     更新罗盘显示
+     ═══════════════════════════════════════════════════ */
+  function updateDisplay() {
+    var display = document.getElementById('mbti-display');
+    if (!display) return;
+
+    display.textContent = MBTI_TYPES[currentIndex];
+    display.classList.add('text-switching');
+    setTimeout(function () {
+      display.classList.remove('text-switching');
+    }, 150);
+  }
+
+  /* ═══════════════════════════════════════════════════
+     箭头事件绑定
+     ═══════════════════════════════════════════════════ */
+  function bindEvents() {
+    var leftArrow = document.getElementById('arrow-left');
+    var rightArrow = document.getElementById('arrow-right');
+
+    if (leftArrow) {
+      leftArrow.addEventListener('click', function () {
+        currentIndex = (currentIndex - 1 + MBTI_TYPES.length) % MBTI_TYPES.length;
+        updateDisplay();
+      });
+    }
+
+    if (rightArrow) {
+      rightArrow.addEventListener('click', function () {
+        currentIndex = (currentIndex + 1) % MBTI_TYPES.length;
+        updateDisplay();
+      });
+    }
+
+    /* 键盘左右键 */
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowLeft') {
+        currentIndex = (currentIndex - 1 + MBTI_TYPES.length) % MBTI_TYPES.length;
+        updateDisplay();
+      } else if (e.key === 'ArrowRight') {
+        currentIndex = (currentIndex + 1) % MBTI_TYPES.length;
+        updateDisplay();
+      }
+    });
+  }
+
+  /* ═══════════════════════════════════════════════════
+     updateUI() 统一刷新（后续步骤扩展）
+     ═══════════════════════════════════════════════════ */
+  function updateUI() {
+    updateDisplay();
+  }
+
+  /* ═══════════════════════════════════════════════════
+     入口
+     ═══════════════════════════════════════════════════ */
+  function init() {
+    createStarfield();
+    renderArrows();   /* 先渲染箭头，确保左箭头在罗盘前 */
+    renderCompass();
+    bindEvents();
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
 </script>
 
 </body>
