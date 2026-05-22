@@ -196,16 +196,12 @@
      ═══════════════════════════════════════════════════ */
   .trigram {
     position: absolute;
-    top: 50%;
-    left: 50%;
+    top: calc(50% + var(--ty));
+    left: calc(50% + var(--tx));
+    transform: translate(-50%, -50%);
     font-family: var(--font-title);
-    font-size: 22px;
+    font-size: 18px;
     color: var(--gold-dark);
-    transform:
-      translate(-50%, -50%)
-      rotate(var(--a))
-      translateY(-140px)
-      rotate(calc(-1 * var(--a)));
     pointer-events: none;
     text-shadow: 0 0 8px rgba(184, 134, 11, 0.2);
   }
@@ -238,7 +234,7 @@
   }
 
   .arrow:hover {
-    filter: drop-shadow(0 0 12px var(--bronze-light));
+    filter: drop-shadow(0 0 12px rgba(139, 90, 60, 0.85));
   }
 
   .arrow:active {
@@ -330,9 +326,9 @@
      星图参数
      ═══════════════════════════════════════════════════ */
   const STAR_LAYERS = [
-    { count: 120, size: 1, opacity: 0.25, speed: 120 },
-    { count: 60,  size: 2, opacity: 0.40, speed: 180 },
-    { count: 25,  size: 2.5, opacity: 0.55, speed: 240 }
+    { count: 120, size: 1, blur: 1, opacity: 0.25, speed: 120 },
+    { count: 60,  size: 2, blur: 2, opacity: 0.40, speed: 180 },
+    { count: 25,  size: 2, blur: 3, opacity: 0.55, speed: 240 }
   ];
 
   /* ═══════════════════════════════════════════════════
@@ -384,7 +380,7 @@
       for (var i = 0; i < layer.count; i++) {
         var x = (Math.random() * 800 - 400).toFixed(1);
         var y = (Math.random() * 800 - 400).toFixed(1);
-        shadows.push(x + 'px ' + y + 'px 0 ' + layer.size + 'px rgba(218,165,32,' + layer.opacity + ')');
+        shadows.push(x + 'px ' + y + 'px ' + layer.blur + 'px ' + layer.size + 'px rgba(218,165,32,' + layer.opacity + ')');
       }
       div.style.boxShadow = shadows.join(', ');
       div.style.width = layer.size + 'px';
@@ -413,13 +409,16 @@
       compass.appendChild(ring);
     });
 
-    /* ── 八卦爻符 ── */
+    /* ── 八卦爻符（直接计算 x/y 坐标，半径 140px） ── */
     TRIGRAMS.forEach(function (char, i) {
       var span = document.createElement('span');
       span.className = 'trigram';
       span.textContent = char;
-      var angle = (i / 8) * 2 * Math.PI - Math.PI / 2;
-      span.style.setProperty('--a', angle + 'rad');
+      var angle = (i / 8) * 2 * Math.PI;   /* 从顶部顺时针 */
+      var tx = (128 * Math.sin(angle)).toFixed(1);
+      var ty = (-128 * Math.cos(angle)).toFixed(1);
+      span.style.setProperty('--tx', tx + 'px');
+      span.style.setProperty('--ty', ty + 'px');
       compass.appendChild(span);
     });
 
