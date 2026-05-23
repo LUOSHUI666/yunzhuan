@@ -286,6 +286,8 @@
     animation: tokenFloat var(--float-duration) ease-in-out infinite;
     animation-delay: var(--float-delay);
     transition:
+      transform 0.35s var(--easing),
+      opacity 0.35s var(--easing),
       box-shadow 0.35s var(--easing),
       color 0.35s var(--easing),
       text-shadow 0.35s var(--easing),
@@ -305,6 +307,36 @@
     border-color: rgba(196, 30, 58, 0.5);
   }
 
+  /* 选中令牌：飞升中央 */
+  .token--selected {
+    animation: none;
+    z-index: 50;
+    transition:
+      transform 0.8s var(--easing),
+      opacity 0.8s var(--easing),
+      box-shadow 0.35s var(--easing),
+      color 0.35s var(--easing),
+      text-shadow 0.35s var(--easing),
+      border-color 0.35s var(--easing);
+    color: var(--cinnabar-light);
+    text-shadow:
+      0 0 12px rgba(196, 30, 58, 0.85),
+      0 0 28px rgba(196, 30, 58, 0.5);
+    box-shadow:
+      0 0 18px rgba(196, 30, 58, 0.25),
+      0 0 36px rgba(196, 30, 58, 0.12),
+      inset 0 0 18px rgba(196, 30, 58, 0.08);
+    border-color: rgba(196, 30, 58, 0.5);
+  }
+
+  /* 非选中令牌：淡出 */
+  .token--dimmed {
+    animation: none;
+    opacity: 0;
+    transition: opacity 0.8s var(--easing);
+    pointer-events: none;
+  }
+
   @keyframes tokenFloat {
     0%, 100% { transform: translateY(0); }
     50%      { transform: translateY(calc(-1 * var(--float-amp))); }
@@ -315,12 +347,29 @@
      ═══════════════════════════════════════════════════ */
 
   /* ═══════════════════════════════════════════════════
-     粒子层（预留，Step 3 实现）
+     粒子层 — 金色光点爆发
      ═══════════════════════════════════════════════════ */
+  .particle {
+    position: fixed;
+    width: 8px;
+    height: 8px;
+    background: var(--gold-light);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 100;
+    box-shadow:
+      0 0 6px var(--gold-light),
+      0 0 18px rgba(218, 165, 32, 0.5);
+    animation: particleBurst 0.8s var(--easing) forwards;
+  }
 
   /* ═══════════════════════════════════════════════════
-     动画关键帧（后续步骤追加）
+     粒子爆发关键帧
      ═══════════════════════════════════════════════════ */
+  @keyframes particleBurst {
+    0%   { transform: translate(0, 0) scale(1); opacity: 1; }
+    100% { transform: translate(var(--px), var(--py)) scale(0.2); opacity: 0; }
+  }
 
   /* ═══════════════════════════════════════════════════
      无障碍
@@ -330,6 +379,9 @@
     .compass-center { transition: none !important; }
     .arrow { transition: none !important; }
     .token { animation: none !important; }
+    .particle { display: none !important; }
+    .token--selected { animation: none !important; transition: none !important; }
+    .token--dimmed { animation: none !important; opacity: 0 !important; }
   }
 </style>
 </head>
@@ -553,7 +605,34 @@
     moveToCenter / resetPosition — 令牌飞升与归位
 ============================================================ -->
 <script data-module="effects">
-  // ── 粒子爆发 ──
+  /* ═══════════════════════════════════════════════════
+     粒子爆发
+     在 (x, y) 坐标生成 PARTICLE_COUNT 个金色粒子，
+     随机方向飞行 0.8s 后自动移除 DOM
+     ═══════════════════════════════════════════════════ */
+  function createParticles(x, y) {
+    for (var i = 0; i < PARTICLE_COUNT; i++) {
+      var particle = document.createElement('div');
+      particle.className = 'particle';
+      particle.style.left = x + 'px';
+      particle.style.top = y + 'px';
+
+      var angle = Math.random() * 2 * Math.PI;
+      var distance = 60 + Math.random() * 140;
+      particle.style.setProperty('--px', (Math.cos(angle) * distance).toFixed(1) + 'px');
+      particle.style.setProperty('--py', (Math.sin(angle) * distance).toFixed(1) + 'px');
+
+      document.body.appendChild(particle);
+    }
+
+    setTimeout(function () {
+      var particles = document.querySelectorAll('.particle');
+      for (var i = 0; i < particles.length; i++) {
+        particles[i].remove();
+      }
+    }, 800);
+  }
+
   // ── 打字机效果 ──
   // ── 淡入淡出 ──
   // ── 位移过渡 ──
@@ -576,6 +655,7 @@
      全局状态
      ═══════════════════════════════════════════════════ */
   var currentIndex = MBTI_TYPES.indexOf(DEFAULT_MBTI);
+  var isAnimating = false;
 
   /* ═══════════════════════════════════════════════════
      更新罗盘显示
@@ -622,6 +702,37 @@
         updateDisplay();
       }
     });
+
+    /* 令牌点击：启卦 */
+    var tokensContainer = document.getElementById('tokens-container');
+    if (tokensContainer) {
+      tokensContainer.addEventListener('click', function (e) {
+        var token = e.target.closest('.token');
+        if (!token || isAnimating || token.classList.contains('token--selected')) return;
+
+        isAnimating = true;
+
+        /* 粒子爆发 */
+        var rect = token.getBoundingClientRect();
+        var cx = rect.left + rect.width / 2;
+        var cy = rect.top + rect.height / 2;
+        createParticles(cx, cy);
+
+        /* 选中令牌飞升中央 */
+        var dx = window.innerWidth / 2 - cx;
+        var dy = window.innerHeight / 2 - cy;
+        token.style.transform = 'translate(' + dx.toFixed(1) + 'px, ' + dy.toFixed(1) + 'px) scale(1.8)';
+        token.classList.add('token--selected');
+
+        /* 其余令牌淡出 */
+        var siblings = tokensContainer.querySelectorAll('.token:not([data-token="' + token.getAttribute('data-token') + '"])');
+        for (var i = 0; i < siblings.length; i++) {
+          siblings[i].classList.add('token--dimmed');
+        }
+
+        setTimeout(function () { isAnimating = false; }, 800);
+      });
+    }
   }
 
   /* ═══════════════════════════════════════════════════
@@ -629,6 +740,18 @@
      ═══════════════════════════════════════════════════ */
   function updateUI() {
     updateDisplay();
+  }
+
+  /* ═══════════════════════════════════════════════════
+     令牌复位（归真时调用）
+     ═══════════════════════════════════════════════════ */
+  function resetTokens() {
+    isAnimating = false;
+    var tokens = document.querySelectorAll('.token');
+    for (var i = 0; i < tokens.length; i++) {
+      tokens[i].classList.remove('token--selected', 'token--dimmed');
+      tokens[i].style.transform = '';
+    }
   }
 
   /* ═══════════════════════════════════════════════════
