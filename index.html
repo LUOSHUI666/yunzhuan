@@ -32,6 +32,8 @@
     --cinnabar-light: #E23D3D;
     --bronze: #6B3A2A;
     --bronze-light: #8B5A3C;
+    --patina: #4A5A3E;
+    --patina-dark: #2E3828;
     --bamboo: #F0EAD6;
     --bamboo-dark: #E0D5C0;
     --ink: #2C1810;
@@ -268,12 +270,34 @@
   .token {
     width: 80px;
     height: 180px;
-    background: linear-gradient(
-      to bottom,
-      rgba(139, 115, 85, 0.18),
-      rgba(139, 115, 85, 0.04)
-    );
-    border: 1px solid rgba(139, 115, 85, 0.3);
+    background:
+      /* 铜绿斑驳 — 不规则色块叠出出土青铜的氧化层次 */
+      radial-gradient(ellipse at 30% 12%, rgba(100, 120, 75, 0.55) 0%, transparent 42%),
+      radial-gradient(ellipse at 72% 48%, rgba(75, 95, 55, 0.45) 0%, transparent 38%),
+      radial-gradient(ellipse at 18% 72%, rgba(110, 130, 85, 0.4) 0%, transparent 35%),
+      radial-gradient(ellipse at 82% 22%, rgba(90, 108, 68, 0.5) 0%, transparent 32%),
+      /* 裸露铜色 — 磨损处露出原铜本色 */
+      radial-gradient(circle at 55% 88%, rgba(139, 115, 85, 0.35) 0%, transparent 22%),
+      radial-gradient(circle at 15% 35%, rgba(107, 58, 42, 0.3) 0%, transparent 18%),
+      /* 金属细纹 — 铸造纹理 */
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 3px,
+        rgba(0, 0, 0, 0.04) 3px,
+        rgba(0, 0, 0, 0.04) 4px,
+        transparent 4px,
+        transparent 7px
+      ),
+      /* 基底 — 铜绿渐变 */
+      linear-gradient(
+        to bottom,
+        var(--patina),
+        var(--patina-dark) 42%,
+        var(--patina) 58%,
+        var(--patina-dark) 100%
+      );
+    border: 1px solid rgba(139, 115, 85, 0.4);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -292,7 +316,7 @@
       color 0.35s var(--easing),
       text-shadow 0.35s var(--easing),
       border-color 0.35s var(--easing);
-    text-shadow: 0 0 6px rgba(196, 30, 58, 0.25);
+    text-shadow: 0 0 8px rgba(196, 30, 58, 0.3);
   }
 
   .token:hover {
@@ -303,6 +327,7 @@
     box-shadow:
       0 0 18px rgba(196, 30, 58, 0.25),
       0 0 36px rgba(196, 30, 58, 0.12),
+      0 0 8px rgba(139, 115, 85, 0.2),
       inset 0 0 18px rgba(196, 30, 58, 0.08);
     border-color: rgba(196, 30, 58, 0.5);
   }
@@ -325,6 +350,7 @@
     box-shadow:
       0 0 18px rgba(196, 30, 58, 0.25),
       0 0 36px rgba(196, 30, 58, 0.12),
+      0 0 8px rgba(139, 115, 85, 0.2),
       inset 0 0 18px rgba(196, 30, 58, 0.08);
     border-color: rgba(196, 30, 58, 0.5);
   }
