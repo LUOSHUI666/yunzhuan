@@ -92,7 +92,17 @@
     inset: 0;
     z-index: 1;
     display: flex;
+    flex-direction: column;
     justify-content: center;
+    align-items: center;
+    gap: 40px;
+  }
+
+  /* ═══════════════════════════════════════════════════
+     罗盘行（箭头 + 罗盘 + 箭头）
+     ═══════════════════════════════════════════════════ */
+  .compass-row {
+    display: flex;
     align-items: center;
     gap: 32px;
   }
@@ -246,8 +256,59 @@
      ═══════════════════════════════════════════════════ */
 
   /* ═══════════════════════════════════════════════════
-     令牌组（预留，Step 2 实现）
+     令牌组
      ═══════════════════════════════════════════════════ */
+  #tokens-container {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .token {
+    width: 80px;
+    height: 180px;
+    background: linear-gradient(
+      to bottom,
+      rgba(139, 115, 85, 0.18),
+      rgba(139, 115, 85, 0.04)
+    );
+    border: 1px solid rgba(139, 115, 85, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    writing-mode: vertical-rl;
+    font-family: var(--font-title);
+    font-size: 32px;
+    color: var(--cinnabar);
+    letter-spacing: 8px;
+    cursor: pointer;
+    animation: tokenFloat var(--float-duration) ease-in-out infinite;
+    animation-delay: var(--float-delay);
+    transition:
+      box-shadow 0.35s var(--easing),
+      color 0.35s var(--easing),
+      text-shadow 0.35s var(--easing),
+      border-color 0.35s var(--easing);
+    text-shadow: 0 0 6px rgba(196, 30, 58, 0.25);
+  }
+
+  .token:hover {
+    color: #FF4D4D;
+    text-shadow:
+      0 0 12px rgba(196, 30, 58, 0.85),
+      0 0 28px rgba(196, 30, 58, 0.5);
+    box-shadow:
+      0 0 18px rgba(196, 30, 58, 0.25),
+      0 0 36px rgba(196, 30, 58, 0.12),
+      inset 0 0 18px rgba(196, 30, 58, 0.08);
+    border-color: rgba(196, 30, 58, 0.5);
+  }
+
+  @keyframes tokenFloat {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(calc(-1 * var(--float-amp))); }
+  }
 
   /* ═══════════════════════════════════════════════════
      解读卡片（预留，Step 4 实现）
@@ -394,8 +455,8 @@
      罗盘组件
      ═══════════════════════════════════════════════════ */
   function renderCompass() {
-    var stage = document.getElementById('stage');
-    if (!stage) return;
+    var row = document.querySelector('.compass-row');
+    if (!row) return;
 
     /* ── 罗盘容器 ── */
     var compass = document.createElement('div');
@@ -429,13 +490,16 @@
     center.textContent = DEFAULT_MBTI;
     compass.appendChild(center);
 
-    stage.appendChild(compass);
+    row.appendChild(compass);
   }
 
   /* ── 箭头按钮 ── */
   function renderArrows() {
     var stage = document.getElementById('stage');
     if (!stage) return;
+
+    var row = document.createElement('div');
+    row.className = 'compass-row';
 
     var left = document.createElement('div');
     left.className = 'arrow arrow--left';
@@ -445,12 +509,37 @@
     right.className = 'arrow arrow--right';
     right.id = 'arrow-right';
 
-    stage.appendChild(left);
-    stage.appendChild(right);
+    row.appendChild(left);
+    row.appendChild(right);
+    stage.appendChild(row);
+  }
+
+  /* ── 令牌组 ── */
+  function renderTokens() {
+    var stage = document.getElementById('stage');
+    if (!stage) return;
+
+    var container = document.createElement('div');
+    container.id = 'tokens-container';
+
+    var durations = [3.2, 3.6, 3.0, 3.8, 3.3, 3.5];
+    var delays = [0, 0.5, 1.0, 1.5, 0.3, 0.8];
+
+    TOKENS.forEach(function (name, i) {
+      var token = document.createElement('div');
+      token.className = 'token';
+      token.setAttribute('data-token', name);
+      token.textContent = name;
+      token.style.setProperty('--float-duration', durations[i] + 's');
+      token.style.setProperty('--float-delay', delays[i] + 's');
+      token.style.setProperty('--float-amp', TOKEN_FLOAT_AMPLITUDE + 'px');
+      container.appendChild(token);
+    });
+
+    stage.appendChild(container);
   }
 
   /* ── 环形全览面板（预留） ── */
-  /* ── 令牌组（预留） ── */
   /* ── 解读卡片（预留） ── */
 </script>
 
@@ -546,8 +635,9 @@
      ═══════════════════════════════════════════════════ */
   function init() {
     createStarfield();
-    renderArrows();   /* 先渲染箭头，确保左箭头在罗盘前 */
-    renderCompass();
+    renderArrows();   /* 创建 compass-row + 箭头 */
+    renderCompass();  /* 罗盘追加到 compass-row */
+    renderTokens();   /* 六张符箓令牌 */
     bindEvents();
   }
 
