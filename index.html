@@ -270,29 +270,35 @@
   .token {
     width: 80px;
     height: 180px;
-    background-color: var(--patina);
+    background-color: var(--patina-dark);
     background-image:
-      /* 铜绿斑驳 — 不规则氧化色块 */
-      radial-gradient(at 25% 10%, rgba(130, 155, 95, 0.6), transparent 48%),
-      radial-gradient(at 75% 45%, rgba(100, 128, 72, 0.52), transparent 42%),
-      radial-gradient(at 20% 70%, rgba(140, 165, 105, 0.48), transparent 40%),
-      radial-gradient(at 80% 18%, rgba(112, 138, 80, 0.55), transparent 38%),
-      radial-gradient(at 50% 88%, rgba(120, 145, 88, 0.45), transparent 44%),
-      radial-gradient(at 12% 50%, rgba(105, 130, 75, 0.5), transparent 40%),
-      /* 原铜裸露 — 边角磨损处暖铜本色 */
-      radial-gradient(circle at 88% 85%, rgba(185, 150, 108, 0.48), transparent 20%),
-      radial-gradient(circle at 12% 28%, rgba(145, 88, 55, 0.42), transparent 15%),
-      radial-gradient(circle at 58% 94%, rgba(190, 158, 112, 0.4), transparent 16%),
-      radial-gradient(circle at 40% 6%, rgba(200, 165, 118, 0.38), transparent 13%),
-      /* 铸造斜纹 + 哑光反射 */
-      repeating-linear-gradient(28deg, transparent, transparent 4px, rgba(0,0,0,0.04) 4px, rgba(0,0,0,0.04) 5px, transparent 5px, transparent 9px),
-      linear-gradient(140deg, rgba(185,165,135,0.07), transparent 38%, transparent 62%, rgba(0,0,0,0.05));
-    border: 1px solid rgba(139, 115, 85, 0.4);
+      /* 铜绿斑驳 — 大面积氧化层 */
+      radial-gradient(at 25% 10%, rgba(135, 160, 98, 0.65), transparent 50%),
+      radial-gradient(at 78% 42%, rgba(105, 132, 75, 0.55), transparent 44%),
+      radial-gradient(at 18% 72%, rgba(145, 170, 108, 0.5), transparent 42%),
+      radial-gradient(at 82% 18%, rgba(118, 142, 82, 0.58), transparent 38%),
+      radial-gradient(at 48% 88%, rgba(125, 150, 90, 0.48), transparent 46%),
+      radial-gradient(at 10% 50%, rgba(108, 135, 78, 0.52), transparent 42%),
+      /* 原铜裸露 — 边角磨损暖铜本色 */
+      radial-gradient(circle at 90% 92%, rgba(200, 165, 120, 0.7), transparent 22%),
+      radial-gradient(circle at 8% 25%, rgba(155, 95, 55, 0.6), transparent 16%),
+      radial-gradient(circle at 55% 96%, rgba(198, 162, 115, 0.62), transparent 18%),
+      radial-gradient(circle at 38% 4%, rgba(205, 170, 125, 0.58), transparent 14%),
+      radial-gradient(circle at 92% 55%, rgba(188, 152, 108, 0.55), transparent 15%),
+      radial-gradient(circle at 5% 82%, rgba(160, 108, 62, 0.52), transparent 14%),
+      /* 铸造纹理 + 金属微光 */
+      repeating-linear-gradient(28deg, transparent, transparent 4px, rgba(0,0,0,0.05) 4px, rgba(0,0,0,0.05) 5px, transparent 5px, transparent 9px),
+      linear-gradient(140deg, rgba(195,175,145,0.08), transparent 35%, transparent 65%, rgba(0,0,0,0.06));
+    border: 2px solid rgba(185, 148, 105, 0.55);
     box-shadow:
-      inset 1px 0 0 rgba(139, 115, 85, 0.08),
-      inset -1px 0 0 rgba(139, 115, 85, 0.08),
-      inset 0 1px 0 rgba(139, 115, 85, 0.06),
-      inset 0 -1px 0 rgba(139, 115, 85, 0.06);
+      /* 顶边+左边 — 光源方向高亮 */
+      inset 0 1px 1px rgba(210, 185, 148, 0.2),
+      inset -1px 0 1px rgba(210, 185, 148, 0.14),
+      /* 底边+右边 — 阴影侧 */
+      inset 0 -1px 1px rgba(0, 0, 0, 0.3),
+      inset 1px 0 1px rgba(0, 0, 0, 0.18),
+      /* 内角加深 — 强化立体感 */
+      inset 0 0 4px rgba(0, 0, 0, 0.15);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -322,13 +328,13 @@
     box-shadow:
       0 0 18px rgba(196, 30, 58, 0.25),
       0 0 36px rgba(196, 30, 58, 0.12),
-      0 0 8px rgba(139, 115, 85, 0.2),
+      0 0 8px rgba(185, 148, 105, 0.25),
       inset 0 0 18px rgba(196, 30, 58, 0.08),
-      inset 1px 0 0 rgba(139, 115, 85, 0.08),
-      inset -1px 0 0 rgba(139, 115, 85, 0.08),
-      inset 0 1px 0 rgba(139, 115, 85, 0.06),
-      inset 0 -1px 0 rgba(139, 115, 85, 0.06);
-    border-color: rgba(196, 30, 58, 0.5);
+      inset 0 1px 1px rgba(210, 185, 148, 0.2),
+      inset -1px 0 1px rgba(210, 185, 148, 0.14),
+      inset 0 -1px 1px rgba(0, 0, 0, 0.3),
+      inset 1px 0 1px rgba(0, 0, 0, 0.18);
+    border-color: rgba(196, 30, 58, 0.55);
   }
 
   /* 选中令牌：飞升中央 */
@@ -349,13 +355,13 @@
     box-shadow:
       0 0 18px rgba(196, 30, 58, 0.25),
       0 0 36px rgba(196, 30, 58, 0.12),
-      0 0 8px rgba(139, 115, 85, 0.2),
+      0 0 8px rgba(185, 148, 105, 0.25),
       inset 0 0 18px rgba(196, 30, 58, 0.08),
-      inset 1px 0 0 rgba(139, 115, 85, 0.08),
-      inset -1px 0 0 rgba(139, 115, 85, 0.08),
-      inset 0 1px 0 rgba(139, 115, 85, 0.06),
-      inset 0 -1px 0 rgba(139, 115, 85, 0.06);
-    border-color: rgba(196, 30, 58, 0.5);
+      inset 0 1px 1px rgba(210, 185, 148, 0.2),
+      inset -1px 0 1px rgba(210, 185, 148, 0.14),
+      inset 0 -1px 1px rgba(0, 0, 0, 0.3),
+      inset 1px 0 1px rgba(0, 0, 0, 0.18);
+    border-color: rgba(196, 30, 58, 0.55);
   }
 
   /* 非选中令牌：淡出 */
