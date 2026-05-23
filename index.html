@@ -372,6 +372,110 @@
   }
 
   /* ═══════════════════════════════════════════════════
+     观象卡片（Step 4）— 竹简纹理 + 打字机正文
+     ═══════════════════════════════════════════════════ */
+  .reading-card {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.92);
+    width: min(520px, 88vw);
+    max-height: min(420px, 70vh);
+    z-index: 60;
+    background-color: var(--bamboo);
+    background-image:
+      repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 29px,
+        rgba(44, 24, 16, 0.05) 29px,
+        rgba(44, 24, 16, 0.05) 30px
+      ),
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 40px,
+        rgba(44, 24, 16, 0.03) 40px,
+        rgba(44, 24, 16, 0.03) 41px
+      );
+    border: 2px solid var(--ink-light);
+    border-radius: 3px;
+    padding: 32px 36px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    opacity: 0;
+    pointer-events: none;
+    box-shadow:
+      0 8px 40px rgba(0, 0, 0, 0.65),
+      0 0 0 1px rgba(44, 24, 16, 0.15),
+      inset 0 1px 0 rgba(240, 234, 214, 0.12);
+    transition: opacity 0.5s var(--easing), transform 0.5s var(--easing);
+  }
+
+  .reading-card--visible {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+    pointer-events: auto;
+  }
+
+  .card-tag {
+    font-family: var(--font-title);
+    font-size: 20px;
+    color: var(--cinnabar);
+    letter-spacing: 4px;
+    text-shadow: 0 0 8px rgba(196, 30, 58, 0.2);
+    border-bottom: 1px solid rgba(44, 24, 16, 0.12);
+    padding-bottom: 12px;
+  }
+
+  .card-time {
+    font-family: var(--font-body);
+    font-size: 15px;
+    color: var(--ink-light);
+    letter-spacing: 2px;
+    min-height: 1.4em;
+  }
+
+  .card-text {
+    font-family: var(--font-body);
+    font-size: 16px;
+    color: var(--ink);
+    line-height: 1.9;
+    letter-spacing: 1px;
+    flex: 1;
+    overflow-y: auto;
+    min-height: 3em;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(44, 24, 16, 0.2) transparent;
+  }
+
+  .card-text::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .card-text::-webkit-scrollbar-thumb {
+    background: rgba(44, 24, 16, 0.2);
+    border-radius: 2px;
+  }
+
+  .card-hint {
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: var(--ink-light);
+    text-align: center;
+    letter-spacing: 2px;
+    opacity: 0;
+    transition: opacity 1s var(--easing);
+    border-top: 1px solid rgba(44, 24, 16, 0.08);
+    padding-top: 12px;
+  }
+
+  .card-hint--visible {
+    opacity: 1;
+  }
+
+  /* ═══════════════════════════════════════════════════
      无障碍
      ═══════════════════════════════════════════════════ */
   @media (prefers-reduced-motion: reduce) {
@@ -382,6 +486,9 @@
     .particle { display: none !important; }
     .token--selected { animation: none !important; transition: none !important; }
     .token--dimmed { animation: none !important; opacity: 0 !important; }
+    .reading-card { transition: none !important; opacity: 0 !important; }
+    .reading-card--visible { opacity: 1 !important; transform: translate(-50%, -50%) scale(1) !important; }
+    .card-hint { transition: none !important; }
   }
 </style>
 </head>
@@ -460,10 +567,162 @@
   编辑此区域即可更新全部文案，保持格式严格一致
 ============================================================ -->
 <script data-module="data">
-  // ── TOKEN_DATA 核心数据 ──
-  // ── 会话历史（防重复机制） ──
-  // ── getReading(mbti, token) ──
-  // ── resetSessionHistory() ──
+  /* ═══════════════════════════════════════════════════
+     MBTI 类型标签（中文雅号）
+     ═══════════════════════════════════════════════════ */
+  var TYPE_TAGS = {
+    'INFP': '逍遥散人',
+    'INTJ': '弈天者',
+    'INFJ': '渡人舟',
+    'ENFP': '逐风客'
+  };
+
+  /* ═══════════════════════════════════════════════════
+     TOKEN_DATA — 4类型×6令牌×2变体 = 48组
+     ═══════════════════════════════════════════════════ */
+  var TOKEN_DATA = {
+    "INFP": {
+      "迷途": [
+        { text: "雾中有路，只是眼看不见。我闭上眼，用脚底去听——听那最细的根须如何选择泥土的方向。", time: "卯时初刻 · 晨露未晞" },
+        { text: "迷途本身或许就是归途。何必急着走出这片森林？林深处，才有别人不曾见过的月光。", time: "亥时三刻 · 月满西楼" }
+      ],
+      "坎": [
+        { text: "水遇石则绕，绕不过便蓄成一潭。潭深了，反而照见天光。我的柔软，原是最韧的铠甲。", time: "午时初刻 · 云雾初开" },
+        { text: "我筑了一座水晶宫，晶莹剔透，却一碰就碎。外面的石子飞来时，我分不清哪个是恶意，哪个只是风。", time: "申时三刻 · 暮鼓声远" }
+      ],
+      "执": [
+        { text: "手里攥着一颗种子，别人说干瘪了，我偏要等它发芽。十年不长，我便等二十年。这不是固执，是信。", time: "辰时三刻 · 风起萍末" },
+        { text: "我守着心里的那盏灯，生怕它灭了。可我忘了——握得太紧，手心会出汗，灯火反而会溺死在掌纹里。", time: "子时初刻 · 万籁俱寂" }
+      ],
+      "散": [
+        { text: "蒲公英散了，每一朵都带着整棵植株的魂。我不必聚在一起才有意义——飘到哪儿，哪儿就是归处。", time: "巳时初刻 · 云淡风轻" },
+        { text: "我把心掰成许多块分出去，收回来时才发现——没有人分给我他们的。空着手站在人群里，比独处更冷。", time: "戌时三刻 · 归鸟入林" }
+      ],
+      "渊": [
+        { text: "静水深流，表面不见波澜，底下却藏着暗涌与虹彩。你只看我一眼便走，自然错过了万丈之下的奇观。", time: "丑时初刻 · 星垂平野" },
+        { text: "我往心里挖了很深的井，本想取水，却挖出了从未见过的影子。井太深了，有时连自己都听不见自己的回声。", time: "酉时三刻 · 暮色四合" }
+      ],
+      "生": [
+        { text: "蚕以为自己要死了，结果长出了翅膀。我每一次以为走到了尽头，回头看，不过是蜕了一层旧皮。", time: "寅时三刻 · 东方既白" },
+        { text: "种子裂开的时候是疼的，但它不裂开，便永远不知道自己是一棵树。我正在裂开的路上，不知道还要疼多久。", time: "未时初刻 · 水落石出" }
+      ]
+    },
+    "INTJ": {
+      "迷途": [
+        { text: "方向不是别人给的，是自己算出来的。我在星图上画了七十二道线，每一条都通向同一个终点——我认定的那个。", time: "子时三刻 · 斗转星移" },
+        { text: "我总想看清整盘棋，可我忘了棋局没有边界。算得尽天下，算不尽自己。", time: "申时初刻 · 日昃之离" }
+      ],
+      "坎": [
+        { text: "低谷是俯瞰全局最好的位置。山脚下看不清的路，山顶上未必能看清——但盆地正中，反而一目了然。", time: "丑时初刻 · 星垂平野" },
+        { text: "我习惯独自翻过每一道坎。但我建了太高的墙，别人进不来，我也出不去。", time: "戌时初刻 · 暮云四合" }
+      ],
+      "执": [
+        { text: "他们说这是执念，我说这是蓝图。这个世界的秩序从来由不肯放手的人建成，不是随缘的人。", time: "辰时初刻 · 东方既白" },
+        { text: "我一手搭建的棋局，每一步都算到了——唯独没算到自己也会累。", time: "亥时三刻 · 月落乌啼" }
+      ],
+      "散": [
+        { text: "沙粒散了各自为战，但我把它们炼成了玻璃。无序里找到规律——这本就是我最擅长的事。", time: "巳时三刻 · 日上三竿" },
+        { text: "我把一切整理得井井有条，唯独整理不了自己心里的那团乱麻。", time: "酉时初刻 · 归鸟入林" }
+      ],
+      "渊": [
+        { text: "深渊不是用来跳的，是用来测绘的。我花了十年丈量它的深度，最后发现它可以被架成一座桥。", time: "寅时初刻 · 晨露未晞" },
+        { text: "我总在追寻最深的答案，但有些问题没有底。悬在半空的时候，比掉进去还难受。", time: "子时初刻 · 万籁俱寂" }
+      ],
+      "生": [
+        { text: "每一个系统都有漏洞，而我在漏洞里种了一片森林。规则之外的事，往往才是真正的规则。", time: "卯时初刻 · 云雾初开" },
+        { text: "我设计了一整套人生模型，唯独调试不了那一行——叫做'不去控制'。", time: "午时三刻 · 日正当中" }
+      ]
+    },
+    "INFJ": {
+      "迷途": [
+        { text: "你在雾中给我指路，自己的鞋却早已湿透。没关系——我渡人，便是渡己。", time: "卯时初刻 · 晨露未晞" },
+        { text: "我点亮了很多人的灯，却忘了自己的那盏已经微弱得快要灭掉。谁来渡我？", time: "亥时初刻 · 星汉西流" }
+      ],
+      "坎": [
+        { text: "坎不是惩罚，是功课。你跨过它的时候，它正在教会两个世界的人如何握手。", time: "午时初刻 · 云雾初开" },
+        { text: "我太擅长体会别人的痛了，痛到分不清哪些是我的，哪些是我替别人背的。", time: "戌时三刻 · 暮鼓声远" }
+      ],
+      "执": [
+        { text: "我不是执，是知道那条路虽然远，但通往一个所有人都能安坐的黄昏。", time: "辰时三刻 · 风起萍末" },
+        { text: "我想让每一个人都好起来。可我弄丢了一个人——镜子里那个。", time: "子时三刻 · 斗转星移" }
+      ],
+      "散": [
+        { text: "我收集每一颗掉落的星，用看不见的线把它们缝成星座。散了，不过是换了一个形状。", time: "巳时初刻 · 云淡风轻" },
+        { text: "我把自己给了太多人。收回来的时候才发现，给出去的那些碎片已经拼不回去了。", time: "酉时三刻 · 暮色四合" }
+      ],
+      "渊": [
+        { text: "深渊底下有温泉——这是我潜入深渊之后才知道的。我不怕深，只怕浅得看不见光。", time: "丑时初刻 · 星垂平野" },
+        { text: "有些人来向我倾诉，把深渊倒给我之后就轻松地走了。而我抱着他们的深渊，走不出去。", time: "申时三刻 · 日昃之离" }
+      ],
+      "生": [
+        { text: "一粒种子埋进土里，死了，春天便长出森林。不是所有牺牲都是悲剧——有些是约定的开始。", time: "寅时三刻 · 东方既白" },
+        { text: "我总在帮别人找到意义。可我自己的意义，谁来帮我确认？", time: "未时初刻 · 水落石出" }
+      ]
+    },
+    "ENFP": {
+      "迷途": [
+        { text: "迷路是探险的入场券——每条岔路都藏着不曾预设的风景。我追逐的不是方向，是风。", time: "巳时初刻 · 云淡风轻" },
+        { text: "我跑得太快了，回头时才发现当初同行的人都不见了。风的代价，是没有根。", time: "酉时三刻 · 暮色四合" }
+      ],
+      "坎": [
+        { text: "跌倒了正好换个角度看世界。地上的蚂蚁不知道我在俯视它们，就像我不知道谁在俯视我。", time: "未时初刻 · 水落石出" },
+        { text: "我总能在困境里找到出口，但新鲜的出口太多，以至于没有一条路走到尽头。", time: "子时初刻 · 万籁俱寂" }
+      ],
+      "执": [
+        { text: "我执于可能性本身。不相信有死胡同，只相信还没找到那条缝隙——每堵墙都欠我一个惊喜。", time: "辰时初刻 · 东方既白" },
+        { text: "我想要抓住每一阵风。可我忘了，手心里的不是风，是空。", time: "亥时初刻 · 月满西楼" }
+      ],
+      "散": [
+        { text: "散落在各处的火种，正是我的特权。今天在此处燃烧，明天在彼处燎原——这世界需要野火。", time: "午时三刻 · 日正当中" },
+        { text: "我在人群中如鱼得水，却在凌晨三点的房间里被寂静淹死。热闹是我的铠甲，不是我的家。", time: "寅时初刻 · 晨露未晞" }
+      ],
+      "渊": [
+        { text: "深渊是探险的最高级别。我不怕暗——太亮了反而没有惊喜。来，一起跳，我带了伞。", time: "申时初刻 · 日昃之离" },
+        { text: "我笑得太大声了，所以没人听见我安静时的求救。深渊不是黑色的——是最鲜艳的孤独。", time: "丑时三刻 · 星垂平野" }
+      ],
+      "生": [
+        { text: "生了又死，死了又生——凤凰的游戏。而我是那只不断从灰烬里爬起来，却每次换一身新羽毛的鸟。", time: "卯时三刻 · 云雾初开" },
+        { text: "我点燃了一千个梦，每一个都是真的——至少在那一刻。可我只有一个明天，装不下一千个真的梦。", time: "戌时初刻 · 暮云四合" }
+      ]
+    }
+  };
+
+  /* ═══════════════════════════════════════════════════
+     会话历史 + 防重复抽取
+     ═══════════════════════════════════════════════════ */
+  var sessionHistory = {};
+
+  function getReading(mbti, token) {
+    var typeData = TOKEN_DATA[mbti];
+    if (!typeData) return null;
+    var tokenEntries = typeData[token];
+    if (!tokenEntries || tokenEntries.length === 0) return null;
+
+    var key = mbti + '_' + token;
+    if (!sessionHistory[key]) sessionHistory[key] = [];
+
+    var shown = sessionHistory[key];
+    var available = [];
+    for (var i = 0; i < tokenEntries.length; i++) {
+      if (shown.indexOf(i) === -1) available.push(tokenEntries[i]);
+    }
+
+    if (available.length === 0) {
+      sessionHistory[key] = [];
+      shown = sessionHistory[key];
+      available = tokenEntries.slice();
+    }
+
+    var pick = available[Math.floor(Math.random() * available.length)];
+    var idx = tokenEntries.indexOf(pick);
+    shown.push(idx);
+
+    return pick;
+  }
+
+  function resetSessionHistory() {
+    sessionHistory = {};
+  }
 </script>
 
 <!-- ============================================================
@@ -593,7 +852,41 @@
   }
 
   /* ── 环形全览面板（预留） ── */
-  /* ── 解读卡片（预留） ── */
+
+  /* ═══════════════════════════════════════════════════
+     解读卡片 — 竹简卡片 DOM
+     返回 { card, timeEl, textEl, hintEl } 引用
+     ═══════════════════════════════════════════════════ */
+  function createReadingCard(mbti, tokenName, readingData) {
+    var existing = document.querySelector('.reading-card');
+    if (existing) existing.remove();
+
+    var card = document.createElement('div');
+    card.className = 'reading-card';
+    card.id = 'reading-card';
+
+    var tag = document.createElement('div');
+    tag.className = 'card-tag';
+    tag.textContent = mbti + ' · ' + (TYPE_TAGS[mbti] || '');
+
+    var time = document.createElement('div');
+    time.className = 'card-time';
+
+    var text = document.createElement('div');
+    text.className = 'card-text';
+
+    var hint = document.createElement('div');
+    hint.className = 'card-hint';
+    hint.textContent = '道法自然，不必执着 · 点击别处再探';
+
+    card.appendChild(tag);
+    card.appendChild(time);
+    card.appendChild(text);
+    card.appendChild(hint);
+    document.body.appendChild(card);
+
+    return { card: card, timeEl: time, textEl: text, hintEl: hint };
+  }
 </script>
 
 <!-- ============================================================
@@ -633,9 +926,54 @@
     }, 800);
   }
 
-  // ── 打字机效果 ──
-  // ── 淡入淡出 ──
-  // ── 位移过渡 ──
+  /* ═══════════════════════════════════════════════════
+     打字机效果 — 逐字显现，返回 Promise
+     ═══════════════════════════════════════════════════ */
+  function typewrite(el, text, speed) {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      el.textContent = text;
+      return Promise.resolve();
+    }
+    return new Promise(function (resolve) {
+      el.textContent = '';
+      var i = 0;
+      var len = text.length;
+      function type() {
+        if (i >= len) { resolve(); return; }
+        el.textContent += text.charAt(i);
+        i++;
+        setTimeout(type, speed);
+      }
+      type();
+    });
+  }
+
+  /* ── 淡入 ── */
+  function fadeIn(el, duration) {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      el.style.opacity = '1';
+      return Promise.resolve();
+    }
+    var dur = duration || 300;
+    return new Promise(function (resolve) {
+      el.style.opacity = '0';
+      requestAnimationFrame(function () {
+        el.style.transition = 'opacity ' + dur + 'ms var(--easing)';
+        el.style.opacity = '1';
+        setTimeout(resolve, dur);
+      });
+    });
+  }
+
+  /* ── 淡出 ── */
+  function fadeOut(el, duration) {
+    var dur = duration || 300;
+    return new Promise(function (resolve) {
+      el.style.transition = 'opacity ' + dur + 'ms var(--easing)';
+      el.style.opacity = '0';
+      setTimeout(resolve, dur);
+    });
+  }
 </script>
 
 <!-- ============================================================
@@ -656,6 +994,9 @@
      ═══════════════════════════════════════════════════ */
   var currentIndex = MBTI_TYPES.indexOf(DEFAULT_MBTI);
   var isAnimating = false;
+  var isCardVisible = false;
+  var selectedTokenName = '';
+  var selectedMBTI = '';
 
   /* ═══════════════════════════════════════════════════
      更新罗盘显示
@@ -680,6 +1021,7 @@
 
     if (leftArrow) {
       leftArrow.addEventListener('click', function () {
+        if (isCardVisible) return;
         currentIndex = (currentIndex - 1 + MBTI_TYPES.length) % MBTI_TYPES.length;
         updateDisplay();
       });
@@ -687,6 +1029,7 @@
 
     if (rightArrow) {
       rightArrow.addEventListener('click', function () {
+        if (isCardVisible) return;
         currentIndex = (currentIndex + 1) % MBTI_TYPES.length;
         updateDisplay();
       });
@@ -694,6 +1037,7 @@
 
     /* 键盘左右键 */
     document.addEventListener('keydown', function (e) {
+      if (isCardVisible) return;
       if (e.key === 'ArrowLeft') {
         currentIndex = (currentIndex - 1 + MBTI_TYPES.length) % MBTI_TYPES.length;
         updateDisplay();
@@ -730,9 +1074,24 @@
           siblings[i].classList.add('token--dimmed');
         }
 
-        setTimeout(function () { isAnimating = false; }, 800);
+        selectedTokenName = token.getAttribute('data-token');
+        selectedMBTI = MBTI_TYPES[currentIndex];
+
+        setTimeout(function () {
+          isAnimating = false;
+          showReadingCard();
+        }, 800);
       });
     }
+
+    /* 归真：点击卡片外空白 */
+    document.addEventListener('click', function (e) {
+      if (!isCardVisible) return;
+      var card = document.getElementById('reading-card');
+      if (card && !card.contains(e.target)) {
+        resetToGuiZhen();
+      }
+    });
   }
 
   /* ═══════════════════════════════════════════════════
@@ -751,7 +1110,62 @@
     for (var i = 0; i < tokens.length; i++) {
       tokens[i].classList.remove('token--selected', 'token--dimmed');
       tokens[i].style.transform = '';
+      tokens[i].style.opacity = '';
+      tokens[i].style.transition = '';
     }
+  }
+
+  /* ═══════════════════════════════════════════════════
+     观象：展开卡片 + 打字机 + 底部提示
+     ═══════════════════════════════════════════════════ */
+  async function showReadingCard() {
+    if (isCardVisible) return;
+    isCardVisible = true;
+
+    var reading = getReading(selectedMBTI, selectedTokenName);
+    if (!reading) {
+      isCardVisible = false;
+      resetTokens();
+      return;
+    }
+
+    var els = createReadingCard(selectedMBTI, selectedTokenName, reading);
+
+    /* 选中令牌淡出，让位给卡片 */
+    var selectedToken = document.querySelector('.token--selected');
+    if (selectedToken) {
+      selectedToken.style.transition = 'opacity 0.4s var(--easing)';
+      selectedToken.style.opacity = '0';
+    }
+
+    els.card.classList.add('reading-card--visible');
+
+    if (reading.time) {
+      await typewrite(els.timeEl, reading.time, TYPEWRITER_SPEED_TIME);
+    }
+
+    await typewrite(els.textEl, reading.text, TYPEWRITER_SPEED_TEXT);
+
+    els.hintEl.classList.add('card-hint--visible');
+  }
+
+  /* ═══════════════════════════════════════════════════
+     归真：卡片淡出 → 令牌复位 → 清除历史
+     ═══════════════════════════════════════════════════ */
+  function resetToGuiZhen() {
+    if (!isCardVisible) return;
+    isCardVisible = false;
+
+    var card = document.getElementById('reading-card');
+    if (card) {
+      card.classList.remove('reading-card--visible');
+      setTimeout(function () {
+        if (card.parentNode) card.remove();
+      }, 500);
+    }
+
+    resetTokens();
+    resetSessionHistory();
   }
 
   /* ═══════════════════════════════════════════════════
