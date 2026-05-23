@@ -372,7 +372,9 @@
   }
 
   /* ═══════════════════════════════════════════════════
-     观象卡片（Step 4）— 竹简纹理 + 打字机正文
+     观象卡片（Step 4）— 精细竹简纹理 + 编绳绳结 + 打字机正文
+     五层渐变：纤维纹 → 竹片缝 → 高光边 → 编绳带 → 年代晕染
+     ::before/::after 绳结点缀
      ═══════════════════════════════════════════════════ */
   .reading-card {
     position: fixed;
@@ -384,22 +386,53 @@
     z-index: 60;
     background-color: var(--bamboo);
     background-image:
+      /* 1. 竹纤维竖向纹理 — 极细条纹 */
       repeating-linear-gradient(
         90deg,
-        transparent,
-        transparent 29px,
-        rgba(44, 24, 16, 0.05) 29px,
-        rgba(44, 24, 16, 0.05) 30px
+        transparent 0px,
+        transparent 2px,
+        rgba(44, 24, 16, 0.025) 2px,
+        rgba(44, 24, 16, 0.025) 3px,
+        transparent 3px,
+        transparent 5px
       ),
+      /* 2. 竹片间缝隙 — 每22px一道暗色分隔 */
       repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 40px,
-        rgba(44, 24, 16, 0.03) 40px,
-        rgba(44, 24, 16, 0.03) 41px
+        90deg,
+        transparent 0px,
+        transparent 22px,
+        rgba(44, 24, 16, 0.15) 22px,
+        rgba(44, 24, 16, 0.15) 22.5px
+      ),
+      /* 3. 竹片高光边 — 缝隙旁的微亮弧面 */
+      repeating-linear-gradient(
+        90deg,
+        transparent 0px,
+        transparent 22.5px,
+        rgba(255, 252, 242, 0.3) 22.5px,
+        rgba(255, 252, 242, 0.3) 23.5px
+      ),
+      /* 4. 编绳横带 — 上下两道古绳痕 */
+      linear-gradient(
+        to bottom,
+        transparent 28%,
+        rgba(44, 24, 16, 0.07) 28%,
+        rgba(44, 24, 16, 0.07) 30%,
+        transparent 30%,
+        transparent 68%,
+        rgba(44, 24, 16, 0.07) 68%,
+        rgba(44, 24, 16, 0.07) 70%,
+        transparent 70%
+      ),
+      /* 5. 年代晕染 — 边缘渐深仿古旧竹简 */
+      radial-gradient(
+        ellipse at 50% 50%,
+        transparent 55%,
+        rgba(200, 180, 140, 0.12) 80%,
+        rgba(180, 155, 110, 0.22) 100%
       );
-    border: 2px solid var(--ink-light);
-    border-radius: 3px;
+    border: 2px solid var(--ink);
+    border-radius: 2px;
     padding: 32px 36px;
     display: flex;
     flex-direction: column;
@@ -408,8 +441,9 @@
     pointer-events: none;
     box-shadow:
       0 8px 40px rgba(0, 0, 0, 0.65),
-      0 0 0 1px rgba(44, 24, 16, 0.15),
-      inset 0 1px 0 rgba(240, 234, 214, 0.12);
+      0 0 0 1px rgba(44, 24, 16, 0.2),
+      inset 0 1px 0 rgba(255, 252, 242, 0.1),
+      inset 0 -2px 0 rgba(44, 24, 16, 0.06);
     transition: opacity 0.5s var(--easing), transform 0.5s var(--easing);
   }
 
@@ -417,6 +451,48 @@
     opacity: 1;
     transform: translate(-50%, -50%) scale(1);
     pointer-events: auto;
+  }
+
+  /* 编绳绳结 — ::before 上绳 / ::after 下绳 */
+  .reading-card::before,
+  .reading-card::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 8px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .reading-card::before {
+    top: 29%;
+    background:
+      radial-gradient(circle at 20px 50%, rgba(44, 24, 16, 0.22) 3px, transparent 3px),
+      radial-gradient(circle at 50% 50%, rgba(44, 24, 16, 0.22) 3px, transparent 3px),
+      radial-gradient(circle at calc(100% - 20px) 50%, rgba(44, 24, 16, 0.22) 3px, transparent 3px),
+      linear-gradient(
+        to bottom,
+        transparent 38%,
+        rgba(44, 24, 16, 0.08) 38%,
+        rgba(44, 24, 16, 0.08) 62%,
+        transparent 62%
+      );
+  }
+
+  .reading-card::after {
+    top: 70%;
+    background:
+      radial-gradient(circle at 20px 50%, rgba(44, 24, 16, 0.22) 3px, transparent 3px),
+      radial-gradient(circle at 50% 50%, rgba(44, 24, 16, 0.22) 3px, transparent 3px),
+      radial-gradient(circle at calc(100% - 20px) 50%, rgba(44, 24, 16, 0.22) 3px, transparent 3px),
+      linear-gradient(
+        to bottom,
+        transparent 38%,
+        rgba(44, 24, 16, 0.08) 38%,
+        rgba(44, 24, 16, 0.08) 62%,
+        transparent 62%
+      );
   }
 
   .card-tag {
