@@ -271,33 +271,50 @@
     width: 80px;
     height: 180px;
     background:
-      /* 铜绿斑驳 — 不规则色块叠出出土青铜的氧化层次 */
-      radial-gradient(ellipse at 30% 12%, rgba(100, 120, 75, 0.55) 0%, transparent 42%),
-      radial-gradient(ellipse at 72% 48%, rgba(75, 95, 55, 0.45) 0%, transparent 38%),
-      radial-gradient(ellipse at 18% 72%, rgba(110, 130, 85, 0.4) 0%, transparent 35%),
-      radial-gradient(ellipse at 82% 22%, rgba(90, 108, 68, 0.5) 0%, transparent 32%),
-      /* 裸露铜色 — 磨损处露出原铜本色 */
-      radial-gradient(circle at 55% 88%, rgba(139, 115, 85, 0.35) 0%, transparent 22%),
-      radial-gradient(circle at 15% 35%, rgba(107, 58, 42, 0.3) 0%, transparent 18%),
-      /* 金属细纹 — 铸造纹理 */
+      /* ── 铜绿斑驳层 — 大小不一、形状各异的氧化色块 ── */
+      radial-gradient(ellipse 55% 40% at 28% 10%, rgba(98, 118, 72, 0.5) 0%, transparent 48%),
+      radial-gradient(ellipse 45% 55% at 75% 42%, rgba(78, 98, 55, 0.45) 0%, transparent 42%),
+      radial-gradient(ellipse 60% 35% at 18% 68%, rgba(108, 128, 82, 0.42) 0%, transparent 38%),
+      radial-gradient(ellipse 40% 50% at 82% 20%, rgba(88, 108, 63, 0.48) 0%, transparent 36%),
+      radial-gradient(ellipse 50% 30% at 48% 85%, rgba(95, 115, 70, 0.38) 0%, transparent 44%),
+      radial-gradient(ellipse 35% 45% at 10% 48%, rgba(82, 102, 60, 0.4) 0%, transparent 40%),
+      /* ── 原铜裸露层 — 边角磨损和凸起处露出暖铜本色 ── */
+      radial-gradient(circle 18% at 88% 85%, rgba(139, 115, 85, 0.38) 0%, transparent 22%),
+      radial-gradient(circle 14% at 12% 28%, rgba(107, 58, 42, 0.35) 0%, transparent 16%),
+      radial-gradient(circle 15% at 60% 92%, rgba(150, 125, 90, 0.32) 0%, transparent 18%),
+      radial-gradient(circle 12% at 42% 6%, rgba(160, 130, 95, 0.3) 0%, transparent 14%),
+      /* ── 铸造纹理 — 斜向细纹模拟范铸痕迹 ── */
       repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 3px,
-        rgba(0, 0, 0, 0.04) 3px,
-        rgba(0, 0, 0, 0.04) 4px,
+        28deg,
+        transparent 0px,
         transparent 4px,
-        transparent 7px
+        rgba(0, 0, 0, 0.035) 4px,
+        rgba(0, 0, 0, 0.035) 5px,
+        transparent 5px,
+        transparent 9px
       ),
-      /* 基底 — 铜绿渐变 */
+      /* ── 哑光金属反射 — 斜向微弱光泽 ── */
+      linear-gradient(
+        140deg,
+        rgba(180, 160, 130, 0.06) 0%,
+        transparent 38%,
+        transparent 62%,
+        rgba(0, 0, 0, 0.05) 100%
+      ),
+      /* ── 基底 — 铜绿渐变 ── */
       linear-gradient(
         to bottom,
         var(--patina),
-        var(--patina-dark) 42%,
-        var(--patina) 58%,
+        var(--patina-dark) 40%,
+        var(--patina) 55%,
         var(--patina-dark) 100%
       );
     border: 1px solid rgba(139, 115, 85, 0.4);
+    box-shadow:
+      inset 1px 0 0 rgba(139, 115, 85, 0.08),
+      inset -1px 0 0 rgba(139, 115, 85, 0.08),
+      inset 0 1px 0 rgba(139, 115, 85, 0.06),
+      inset 0 -1px 0 rgba(139, 115, 85, 0.06);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -328,7 +345,11 @@
       0 0 18px rgba(196, 30, 58, 0.25),
       0 0 36px rgba(196, 30, 58, 0.12),
       0 0 8px rgba(139, 115, 85, 0.2),
-      inset 0 0 18px rgba(196, 30, 58, 0.08);
+      inset 0 0 18px rgba(196, 30, 58, 0.08),
+      inset 1px 0 0 rgba(139, 115, 85, 0.08),
+      inset -1px 0 0 rgba(139, 115, 85, 0.08),
+      inset 0 1px 0 rgba(139, 115, 85, 0.06),
+      inset 0 -1px 0 rgba(139, 115, 85, 0.06);
     border-color: rgba(196, 30, 58, 0.5);
   }
 
@@ -351,7 +372,11 @@
       0 0 18px rgba(196, 30, 58, 0.25),
       0 0 36px rgba(196, 30, 58, 0.12),
       0 0 8px rgba(139, 115, 85, 0.2),
-      inset 0 0 18px rgba(196, 30, 58, 0.08);
+      inset 0 0 18px rgba(196, 30, 58, 0.08),
+      inset 1px 0 0 rgba(139, 115, 85, 0.08),
+      inset -1px 0 0 rgba(139, 115, 85, 0.08),
+      inset 0 1px 0 rgba(139, 115, 85, 0.06),
+      inset 0 -1px 0 rgba(139, 115, 85, 0.06);
     border-color: rgba(196, 30, 58, 0.5);
   }
 
