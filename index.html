@@ -32,8 +32,7 @@
     --cinnabar-light: #E23D3D;
     --bronze: #6B3A2A;
     --bronze-light: #8B5A3C;
-    --patina: #5A7250;
-    --patina-dark: #3A4D35;
+    --bronze-deep: #3E2418;
     --bamboo: #F0EAD6;
     --bamboo-dark: #E0D5C0;
     --ink: #2C1810;
@@ -270,35 +269,40 @@
   .token {
     width: 80px;
     height: 180px;
-    background-color: var(--patina-dark);
+    background-color: var(--bronze);
     background-image:
-      /* 铜绿斑驳 — 大面积氧化层 */
-      radial-gradient(at 25% 10%, rgba(135, 160, 98, 0.65), transparent 50%),
-      radial-gradient(at 78% 42%, rgba(105, 132, 75, 0.55), transparent 44%),
-      radial-gradient(at 18% 72%, rgba(145, 170, 108, 0.5), transparent 42%),
-      radial-gradient(at 82% 18%, rgba(118, 142, 82, 0.58), transparent 38%),
-      radial-gradient(at 48% 88%, rgba(125, 150, 90, 0.48), transparent 46%),
-      radial-gradient(at 10% 50%, rgba(108, 135, 78, 0.52), transparent 42%),
-      /* 原铜裸露 — 边角磨损暖铜本色 */
-      radial-gradient(circle at 90% 92%, rgba(200, 165, 120, 0.7), transparent 22%),
-      radial-gradient(circle at 8% 25%, rgba(155, 95, 55, 0.6), transparent 16%),
-      radial-gradient(circle at 55% 96%, rgba(198, 162, 115, 0.62), transparent 18%),
-      radial-gradient(circle at 38% 4%, rgba(205, 170, 125, 0.58), transparent 14%),
-      radial-gradient(circle at 92% 55%, rgba(188, 152, 108, 0.55), transparent 15%),
-      radial-gradient(circle at 5% 82%, rgba(160, 108, 62, 0.52), transparent 14%),
-      /* 铸造纹理 + 金属微光 */
-      repeating-linear-gradient(28deg, transparent, transparent 4px, rgba(0,0,0,0.05) 4px, rgba(0,0,0,0.05) 5px, transparent 5px, transparent 9px),
-      linear-gradient(140deg, rgba(195,175,145,0.08), transparent 35%, transparent 65%, rgba(0,0,0,0.06));
-    border: 2px solid rgba(185, 148, 105, 0.55);
+      /* 金属拉丝 — 主纹理 2deg 细密纹 */
+      repeating-linear-gradient(
+        2deg,
+        transparent,
+        transparent 1px,
+        rgba(0, 0, 0, 0.07) 1px,
+        rgba(0, 0, 0, 0.07) 2px
+      ),
+      /* 金属拉丝 — 交叉纹理 -4deg 粗纹 */
+      repeating-linear-gradient(
+        -4deg,
+        transparent,
+        transparent 4px,
+        rgba(139, 90, 60, 0.05) 4px,
+        rgba(139, 90, 60, 0.05) 5px,
+        transparent 5px,
+        transparent 8px
+      ),
+      /* 哑光渐变 — 上下边缘渐深 */
+      linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.2),
+        transparent 18%,
+        transparent 82%,
+        rgba(0, 0, 0, 0.3)
+      );
+    border: 2px solid var(--bronze-deep);
     box-shadow:
-      /* 顶边+左边 — 光源方向高亮 */
-      inset 0 1px 1px rgba(210, 185, 148, 0.2),
-      inset -1px 0 1px rgba(210, 185, 148, 0.14),
-      /* 底边+右边 — 阴影侧 */
-      inset 0 -1px 1px rgba(0, 0, 0, 0.3),
-      inset 1px 0 1px rgba(0, 0, 0, 0.18),
-      /* 内角加深 — 强化立体感 */
-      inset 0 0 4px rgba(0, 0, 0, 0.15);
+      inset 0 1px 0 rgba(200, 155, 115, 0.18),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.45),
+      inset 1px 0 0 rgba(200, 155, 115, 0.1),
+      inset -1px 0 0 rgba(0, 0, 0, 0.35);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -328,12 +332,11 @@
     box-shadow:
       0 0 18px rgba(196, 30, 58, 0.25),
       0 0 36px rgba(196, 30, 58, 0.12),
-      0 0 8px rgba(185, 148, 105, 0.25),
       inset 0 0 18px rgba(196, 30, 58, 0.08),
-      inset 0 1px 1px rgba(210, 185, 148, 0.2),
-      inset -1px 0 1px rgba(210, 185, 148, 0.14),
-      inset 0 -1px 1px rgba(0, 0, 0, 0.3),
-      inset 1px 0 1px rgba(0, 0, 0, 0.18);
+      inset 0 1px 0 rgba(200, 155, 115, 0.18),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.45),
+      inset 1px 0 0 rgba(200, 155, 115, 0.1),
+      inset -1px 0 0 rgba(0, 0, 0, 0.35);
     border-color: rgba(196, 30, 58, 0.55);
   }
 
@@ -355,12 +358,11 @@
     box-shadow:
       0 0 18px rgba(196, 30, 58, 0.25),
       0 0 36px rgba(196, 30, 58, 0.12),
-      0 0 8px rgba(185, 148, 105, 0.25),
       inset 0 0 18px rgba(196, 30, 58, 0.08),
-      inset 0 1px 1px rgba(210, 185, 148, 0.2),
-      inset -1px 0 1px rgba(210, 185, 148, 0.14),
-      inset 0 -1px 1px rgba(0, 0, 0, 0.3),
-      inset 1px 0 1px rgba(0, 0, 0, 0.18);
+      inset 0 1px 0 rgba(200, 155, 115, 0.18),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.45),
+      inset 1px 0 0 rgba(200, 155, 115, 0.1),
+      inset -1px 0 0 rgba(0, 0, 0, 0.35);
     border-color: rgba(196, 30, 58, 0.55);
   }
 
