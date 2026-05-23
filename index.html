@@ -270,45 +270,23 @@
   .token {
     width: 80px;
     height: 180px;
-    background:
-      /* ── 铜绿斑驳层 — 大小不一、形状各异的氧化色块 ── */
-      radial-gradient(ellipse 55% 40% at 28% 10%, rgba(120, 145, 90, 0.6) 0%, transparent 50%),
-      radial-gradient(ellipse 45% 55% at 75% 42%, rgba(95, 120, 70, 0.55) 0%, transparent 44%),
-      radial-gradient(ellipse 60% 35% at 18% 68%, rgba(135, 158, 100, 0.5) 0%, transparent 40%),
-      radial-gradient(ellipse 40% 50% at 82% 20%, rgba(108, 132, 78, 0.55) 0%, transparent 38%),
-      radial-gradient(ellipse 50% 30% at 48% 85%, rgba(115, 140, 85, 0.48) 0%, transparent 46%),
-      radial-gradient(ellipse 35% 45% at 10% 48%, rgba(100, 125, 72, 0.5) 0%, transparent 42%),
-      /* ── 原铜裸露层 — 边角磨损和凸起处露出暖铜本色 ── */
-      radial-gradient(circle 18% at 88% 85%, rgba(180, 145, 105, 0.45) 0%, transparent 22%),
-      radial-gradient(circle 14% at 12% 28%, rgba(140, 85, 55, 0.42) 0%, transparent 16%),
-      radial-gradient(circle 15% at 60% 92%, rgba(185, 155, 110, 0.4) 0%, transparent 18%),
-      radial-gradient(circle 12% at 42% 6%, rgba(195, 160, 115, 0.38) 0%, transparent 14%),
-      /* ── 铸造纹理 — 斜向细纹模拟范铸痕迹 ── */
-      repeating-linear-gradient(
-        28deg,
-        transparent 0px,
-        transparent 4px,
-        rgba(0, 0, 0, 0.035) 4px,
-        rgba(0, 0, 0, 0.035) 5px,
-        transparent 5px,
-        transparent 9px
-      ),
-      /* ── 哑光金属反射 — 斜向微弱光泽 ── */
-      linear-gradient(
-        140deg,
-        rgba(180, 160, 130, 0.06) 0%,
-        transparent 38%,
-        transparent 62%,
-        rgba(0, 0, 0, 0.05) 100%
-      ),
-      /* ── 基底 — 铜绿渐变 ── */
-      linear-gradient(
-        to bottom,
-        var(--patina),
-        var(--patina-dark) 40%,
-        var(--patina) 55%,
-        var(--patina-dark) 100%
-      );
+    background-color: var(--patina);
+    background-image:
+      /* 铜绿斑驳 — 不规则氧化色块 */
+      radial-gradient(at 25% 10%, rgba(130, 155, 95, 0.6), transparent 48%),
+      radial-gradient(at 75% 45%, rgba(100, 128, 72, 0.52), transparent 42%),
+      radial-gradient(at 20% 70%, rgba(140, 165, 105, 0.48), transparent 40%),
+      radial-gradient(at 80% 18%, rgba(112, 138, 80, 0.55), transparent 38%),
+      radial-gradient(at 50% 88%, rgba(120, 145, 88, 0.45), transparent 44%),
+      radial-gradient(at 12% 50%, rgba(105, 130, 75, 0.5), transparent 40%),
+      /* 原铜裸露 — 边角磨损处暖铜本色 */
+      radial-gradient(circle at 88% 85%, rgba(185, 150, 108, 0.48), transparent 20%),
+      radial-gradient(circle at 12% 28%, rgba(145, 88, 55, 0.42), transparent 15%),
+      radial-gradient(circle at 58% 94%, rgba(190, 158, 112, 0.4), transparent 16%),
+      radial-gradient(circle at 40% 6%, rgba(200, 165, 118, 0.38), transparent 13%),
+      /* 铸造斜纹 + 哑光反射 */
+      repeating-linear-gradient(28deg, transparent, transparent 4px, rgba(0,0,0,0.04) 4px, rgba(0,0,0,0.04) 5px, transparent 5px, transparent 9px),
+      linear-gradient(140deg, rgba(185,165,135,0.07), transparent 38%, transparent 62%, rgba(0,0,0,0.05));
     border: 1px solid rgba(139, 115, 85, 0.4);
     box-shadow:
       inset 1px 0 0 rgba(139, 115, 85, 0.08),
