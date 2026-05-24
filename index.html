@@ -68,6 +68,12 @@
     z-index: 0;
     pointer-events: none;
     overflow: hidden;
+    background:
+      /* 银河辉光 — 对角线星云弥漫 */
+      radial-gradient(ellipse 65% 50% at 28% 35%, rgba(60, 80, 130, 0.12), transparent 55%),
+      radial-gradient(ellipse 55% 45% at 72% 60%, rgba(50, 40, 90, 0.10), transparent 50%),
+      radial-gradient(ellipse 70% 40% at 50% 78%, rgba(35, 45, 70, 0.08), transparent 52%),
+      radial-gradient(ellipse 80% 60% at 45% 50%, rgba(25, 30, 50, 0.06), transparent 65%);
   }
 
   .star-layer {
@@ -969,10 +975,15 @@
       div.style.setProperty('--drift-y', layer.driftY + 'px');
 
       var shadows = [];
+      var baseSize = layer.size;
       for (var i = 0; i < layer.count; i++) {
-        var x = (Math.random() * 1100 - 550).toFixed(1);
-        var y = (Math.random() * 1100 - 550).toFixed(1);
-        shadows.push(x + 'px ' + y + 'px ' + layer.blur + 'px ' + layer.size + 'px ' + pickStarColor(layer.opacity));
+        var x = (Math.random() * 1200 - 600).toFixed(1);
+        var y = (Math.random() * 1200 - 600).toFixed(1);
+        /* 星点大小随机 — 模拟真实星空远近层次 */
+        var starSize = (baseSize * (0.4 + Math.random() * 1.8)).toFixed(1);
+        var starBlur = layer.blur > 0 ? (layer.blur * (0.3 + Math.random() * 1.4)).toFixed(1) : 0;
+        var starOpacity = (layer.opacity * (0.5 + Math.random() * 1.0)).toFixed(3);
+        shadows.push(x + 'px ' + y + 'px ' + starBlur + 'px ' + starSize + 'px ' + pickStarColor(starOpacity));
       }
       div.style.boxShadow = shadows.join(', ');
       div.style.width = layer.size + 'px';
