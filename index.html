@@ -60,7 +60,7 @@
   }
 
   /* ═══════════════════════════════════════════════════
-     背景星图
+     背景星图 — 极慢天球漂移
      ═══════════════════════════════════════════════════ */
   #starfield {
     position: fixed;
@@ -75,45 +75,58 @@
     top: 50%;
     left: 50%;
     border-radius: 50%;
-    will-change: transform, opacity;
-    animation:
-      starRotate var(--speed) linear infinite,
-      starTwinkle var(--twinkle-speed) ease-in-out infinite;
-    animation-delay: 0s, var(--twinkle-delay);
+    will-change: transform;
+    animation: starDrift var(--speed) linear infinite;
   }
 
-  .star-layer:nth-child(2) { animation-direction: reverse, normal; }
-  .star-layer:nth-child(3) { animation-direction: reverse, normal; }
+  .star-layer:nth-child(2) { animation-direction: reverse; }
+  .star-layer:nth-child(3) { animation-direction: reverse; }
 
-  @keyframes starRotate {
-    from { transform: translate(-50%, -50%) rotate(0deg); }
-    to   { transform: translate(-50%, -50%) rotate(360deg); }
-  }
-
-  @keyframes starTwinkle {
-    0%, 100% { opacity: 1; }
-    50%      { opacity: var(--twinkle-amp); }
+  @keyframes starDrift {
+    from { transform: translate(-50%, -50%) rotate(0deg) translateX(var(--drift-x)) translateY(var(--drift-y)); }
+    to   { transform: translate(-50%, -50%) rotate(360deg) translateX(var(--drift-x)) translateY(var(--drift-y)); }
   }
 
   /* ═══════════════════════════════════════════════════
-     流星
+     亮星 — 独立不规则闪烁
+     ═══════════════════════════════════════════════════ */
+  .hero-star {
+    position: fixed;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 4;
+    animation: heroTwinkle var(--hero-period) var(--hero-delay) ease-in-out infinite;
+  }
+
+  @keyframes heroTwinkle {
+    0%, 100%   { opacity: 1;   transform: scale(1); }
+    15%        { opacity: 0.55; transform: scale(0.75); }
+    30%        { opacity: 0.9;  transform: scale(0.95); }
+    45%        { opacity: 0.35; transform: scale(0.6); }
+    60%        { opacity: 1;    transform: scale(1.08); }
+    75%        { opacity: 0.7;  transform: scale(0.85); }
+    90%        { opacity: 0.95; transform: scale(1.02); }
+  }
+
+  /* ═══════════════════════════════════════════════════
+     流星 — 稀有，长间隔
      ═══════════════════════════════════════════════════ */
   .shooting-star {
     position: fixed;
-    width: 100px;
-    height: 1.5px;
+    width: 80px;
+    height: 1px;
     pointer-events: none;
     z-index: 5;
     opacity: 0;
-    background: linear-gradient(to right, transparent, rgba(218, 165, 32, 0.15), rgba(240, 210, 140, 0.8), rgba(255, 240, 200, 0.9));
-    box-shadow: 0 0 4px rgba(218, 165, 32, 0.4);
+    background: linear-gradient(to right, transparent, rgba(200, 210, 230, 0.3), rgba(220, 230, 245, 0.7));
+    box-shadow: 0 0 2px rgba(200, 210, 230, 0.3);
     animation: shootingFly var(--shoot-duration) var(--shoot-delay) ease-out infinite;
   }
 
   @keyframes shootingFly {
     0%   { transform: translate(0, 0); opacity: 0; }
-    6%   { opacity: 1; }
-    18%  { opacity: 0; }
+    4%   { opacity: 1; }
+    12%  { opacity: 0; }
     100% { transform: translate(var(--shoot-dx), var(--shoot-dy)); opacity: 0; }
   }
 
@@ -652,6 +665,7 @@
      ═══════════════════════════════════════════════════ */
   @media (prefers-reduced-motion: reduce) {
     .star-layer { animation: none !important; }
+    .hero-star { animation: none !important; }
     .shooting-star { display: none !important; }
     .compass-center { transition: none !important; }
     .arrow { transition: none !important; }
@@ -719,23 +733,37 @@
   /* ═══════════════════════════════════════════════════
      星图参数
      ═══════════════════════════════════════════════════ */
+  /* ── 星图层：极慢天球漂移 ── */
   const STAR_LAYERS = [
-    { count: 150, size: 1, blur: 1, opacity: 0.22, speed: 140, twinkle: 5.5, twinkleAmp: 0.65, twinkleDelay: 0 },
-    { count: 70,  size: 2, blur: 2, opacity: 0.38, speed: 210, twinkle: 3.8, twinkleAmp: 0.55, twinkleDelay: 1.2 },
-    { count: 30,  size: 2, blur: 3, opacity: 0.52, speed: 280, twinkle: 2.6, twinkleAmp: 0.45, twinkleDelay: 2.5 }
+    { count: 220, size: 1, blur: 0, opacity: 0.12, speed: 1100, driftX: 120, driftY: -30 },
+    { count: 90,  size: 1, blur: 1, opacity: 0.22, speed: 1400, driftX: 180, driftY: 20 },
+    { count: 40,  size: 2, blur: 2, opacity: 0.30, speed: 1800, driftX: 250, driftY: -50 }
   ];
 
+  /* ── 星色：真实恒星分布 — 大量冷白矮星 + 少量暖黄 ── */
   const STAR_COLORS = [
-    { r: 218, g: 165, b: 32,  weight: 0.60 },  /* 暖金 */
-    { r: 185, g: 200, b: 220, weight: 0.25 },  /* 冷白 */
-    { r: 240, g: 210, b: 120, weight: 0.15 }   /* 亮金 */
+    { r: 175, g: 195, b: 215, weight: 0.52 },  /* 蓝白主序星 */
+    { r: 200, g: 210, b: 225, weight: 0.28 },  /* 白矮星 */
+    { r: 230, g: 215, b: 170, weight: 0.14 },  /* 暖黄 */
+    { r: 240, g: 180, b: 130, weight: 0.06 }   /* 橙红 — 稀有 */
   ];
 
-  const SHOOTING_STARS = [
-    { x: '85vw', y: '8vh',  dx: '-70vw', dy: '50vh', dur: 2.2, delay: 0 },
-    { x: '92vw', y: '25vh', dx: '-75vw', dy: '38vh', dur: 2.8, delay: 5 },
-    { x: '78vw', y: '3vh',  dx: '-65vw', dy: '55vh', dur: 1.8, delay: 9 }
+  /* ── 亮星：独立不规则闪烁 ── */
+  const HERO_STARS = [
+    { x: '15vw', y: '12vh', size: 2, glow: 4,  color: 'rgba(195,210,230,0.85)', period: 3.2, delay: 0,   dip: 0.35 },
+    { x: '72vw', y: '8vh',  size: 2, glow: 5,  color: 'rgba(185,200,220,0.9)',  period: 4.5, delay: 1.2, dip: 0.4 },
+    { x: '38vw', y: '22vh', size: 1, glow: 2,  color: 'rgba(200,210,225,0.7)',  period: 2.8, delay: 2.1, dip: 0.5 },
+    { x: '85vw', y: '35vh', size: 1, glow: 3,  color: 'rgba(220,205,170,0.75)', period: 5.2, delay: 0.5, dip: 0.3 },
+    { x: '8vw',  y: '45vh', size: 2, glow: 5,  color: 'rgba(190,205,225,0.88)', period: 3.8, delay: 3.0, dip: 0.25 },
+    { x: '55vw', y: '18vh', size: 1, glow: 2,  color: 'rgba(205,215,230,0.7)',  period: 2.5, delay: 1.8, dip: 0.45 },
+    { x: '92vw', y: '55vh', size: 1, glow: 3,  color: 'rgba(235,210,160,0.72)', period: 4.0, delay: 2.5, dip: 0.38 },
+    { x: '25vw', y: '68vh', size: 1, glow: 2,  color: 'rgba(195,210,228,0.68)', period: 3.5, delay: 0.8, dip: 0.42 },
+    { x: '65vw', y: '72vh', size: 2, glow: 4,  color: 'rgba(200,215,230,0.82)', period: 5.8, delay: 1.5, dip: 0.3 },
+    { x: '48vw', y: '55vh', size: 1, glow: 2,  color: 'rgba(240,185,130,0.7)',  period: 2.2, delay: 3.5, dip: 0.48 }
   ];
+
+  /* ── 流星：单颗稀有，长间隔 ── */
+  const SHOOTING_STAR = { x: '90vw', y: '12vh', dx: '-80vw', dy: '45vh', dur: 1.5, delay: 0 };
 
   /* ═══════════════════════════════════════════════════
      八卦爻符字符
@@ -913,8 +941,9 @@
 <!-- ============================================================
   模块 4：视觉渲染引擎 <script data-module="render">
   所有 DOM 创建与样式操作
-    createStarfield()      — 三层星点旋转 + 闪烁 + 冷暖色混合
-    createShootingStars()  — 流星周期性划过天际
+    createStarfield()      — 三层极慢天球漂移 + 四色恒星分布
+    createHeroStars()      — 10颗亮星独立不规则闪烁
+    createShootingStar()   — 单颗稀有流星长间隔循环
     renderCompass()        — 罗盘纹样 + 中心文字
     renderRingPanel()      — 16 型环形全览
     renderTokens()         — 令牌浮动
@@ -924,26 +953,24 @@
 ============================================================ -->
 <script data-module="render">
   /* ═══════════════════════════════════════════════════
-     背景星图 — 三层旋转 + 闪烁 + 冷暖色混合
+     背景星图 — 极慢漂移 + 多色微星
      ═══════════════════════════════════════════════════ */
   function createStarfield() {
-    const container = document.getElementById('starfield');
+    var container = document.getElementById('starfield');
     if (!container) return;
 
     STAR_LAYERS.forEach(function (layer) {
       var div = document.createElement('div');
       div.className = 'star-layer';
       div.style.setProperty('--speed', layer.speed + 's');
-      div.style.setProperty('--twinkle-speed', layer.twinkle + 's');
-      div.style.setProperty('--twinkle-amp', layer.twinkleAmp);
-      div.style.setProperty('--twinkle-delay', layer.twinkleDelay + 's');
+      div.style.setProperty('--drift-x', layer.driftX + 'px');
+      div.style.setProperty('--drift-y', layer.driftY + 'px');
 
       var shadows = [];
       for (var i = 0; i < layer.count; i++) {
-        var x = (Math.random() * 900 - 450).toFixed(1);
-        var y = (Math.random() * 900 - 450).toFixed(1);
-        var color = pickStarColor(layer.opacity);
-        shadows.push(x + 'px ' + y + 'px ' + layer.blur + 'px ' + layer.size + 'px ' + color);
+        var x = (Math.random() * 1100 - 550).toFixed(1);
+        var y = (Math.random() * 1100 - 550).toFixed(1);
+        shadows.push(x + 'px ' + y + 'px ' + layer.blur + 'px ' + layer.size + 'px ' + pickStarColor(layer.opacity));
       }
       div.style.boxShadow = shadows.join(', ');
       div.style.width = layer.size + 'px';
@@ -953,7 +980,6 @@
     });
   }
 
-  /* 按权重随机选取星色 */
   function pickStarColor(opacity) {
     var r = Math.random();
     var acc = 0;
@@ -964,24 +990,59 @@
         return 'rgba(' + c.r + ',' + c.g + ',' + c.b + ',' + opacity + ')';
       }
     }
-    return 'rgba(218,165,32,' + opacity + ')';
+    return 'rgba(175,195,215,' + opacity + ')';
   }
 
   /* ═══════════════════════════════════════════════════
-     流星 — 周期性划过天际
+     亮星 — 独立不规则闪烁
      ═══════════════════════════════════════════════════ */
-  function createShootingStars() {
-    SHOOTING_STARS.forEach(function (s) {
+  function createHeroStars() {
+    HERO_STARS.forEach(function (h) {
       var star = document.createElement('div');
-      star.className = 'shooting-star';
-      star.style.left = s.x;
-      star.style.top = s.y;
-      star.style.setProperty('--shoot-dx', s.dx);
-      star.style.setProperty('--shoot-dy', s.dy);
-      star.style.setProperty('--shoot-duration', s.dur + 's');
-      star.style.setProperty('--shoot-delay', s.delay + 's');
+      star.className = 'hero-star';
+      star.style.left = h.x;
+      star.style.top = h.y;
+      star.style.width = h.size + 'px';
+      star.style.height = h.size + 'px';
+      star.style.background = h.color;
+      star.style.boxShadow = '0 0 ' + h.glow + 'px ' + h.color;
+      star.style.setProperty('--hero-period', h.period + 's');
+      star.style.setProperty('--hero-delay', h.delay + 's');
+      star.style.setProperty('--hero-dip', h.dip);
       document.body.appendChild(star);
     });
+  }
+
+  /* ═══════════════════════════════════════════════════
+     流星 — 单颗稀有，长间隔
+     ═══════════════════════════════════════════════════ */
+  function createShootingStar() {
+    var s = SHOOTING_STAR;
+    var star = document.createElement('div');
+    star.className = 'shooting-star';
+    star.style.left = s.x;
+    star.style.top = s.y;
+    star.style.setProperty('--shoot-dx', s.dx);
+    star.style.setProperty('--shoot-dy', s.dy);
+    star.style.setProperty('--shoot-duration', s.dur + 's');
+    star.style.setProperty('--shoot-delay', s.delay + 's');
+    document.body.appendChild(star);
+
+    /* 流星结束后重建，间隔 15-35s */
+    var cycle = (s.dur + s.delay) * 1000;
+    setInterval(function () {
+      var old = document.querySelector('.shooting-star');
+      if (old) old.remove();
+      var next = document.createElement('div');
+      next.className = 'shooting-star';
+      next.style.left = (75 + Math.random() * 20) + 'vw';
+      next.style.top = (Math.random() * 30) + 'vh';
+      next.style.setProperty('--shoot-dx', '-' + (60 + Math.random() * 30) + 'vw');
+      next.style.setProperty('--shoot-dy', (30 + Math.random() * 35) + 'vh');
+      next.style.setProperty('--shoot-duration', (1.2 + Math.random() * 1.6).toFixed(1) + 's');
+      next.style.setProperty('--shoot-delay', '0s');
+      document.body.appendChild(next);
+    }, 20000 + Math.random() * 15000);
   }
 
   /* ═══════════════════════════════════════════════════
@@ -1394,7 +1455,8 @@
      ═══════════════════════════════════════════════════ */
   function init() {
     createStarfield();
-    createShootingStars();
+    createHeroStars();
+    createShootingStar();
     renderArrows();   /* 创建 compass-row + 箭头 */
     renderCompass();  /* 罗盘追加到 compass-row */
     renderTokens();   /* 六张符箓令牌 */
