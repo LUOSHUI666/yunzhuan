@@ -1,13 +1,8 @@
-# OS
-.DS_Store
-Thumbs.db
-
-# Editor
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# Demo 阶段无依赖，无需 node_modules
-# 远期若有构建步骤，取消下行注释：
-# node_modules/
+# Build
+/android/
+/ios/
+/node_modules/
+/www/
+*.apk
+*.aab
+*.ipa

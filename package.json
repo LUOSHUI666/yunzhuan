@@ -1,0 +1,20 @@
+{
+  "name": "yunzhuan",
+  "version": "1.0.0",
+  "description": "云篆 · 东方美学人格探索",
+  "main": "sw.js",
+  "scripts": {
+    "sync": "cp index.html manifest.json sw.js icon-*.svg www/",
+    "build:android": "npm run sync && npx cap sync android && cd android && ./gradlew assembleDebug",
+    "build:android:release": "npm run sync && npx cap sync android && cd android && ./gradlew assembleRelease",
+    "build:ios": "npm run sync && npx cap sync ios",
+    "open:android": "npx cap open android",
+    "open:ios": "npx cap open ios"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LUOSHUI666/yunzhuan.git"
+  },
+  "author": "LUOSHUI666",
+  "license": "ISC"
+}
