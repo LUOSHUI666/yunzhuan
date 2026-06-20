@@ -404,10 +404,10 @@
     align-items: center;
     justify-content: center;
     writing-mode: vertical-rl;
-    font-family: var(--font-title);
-    font-size: 32px;
-    color: #8B2020;
-    letter-spacing: 10px;
+    font-family: 'LiSu', '隶书', 'STKaiti', '楷体', 'KaiTi', serif;
+    font-size: 36px;
+    color: #5C1818;
+    letter-spacing: 8px;
     cursor: pointer;
     animation: tokenFloat var(--float-duration) ease-in-out infinite;
     animation-delay: var(--float-delay);
@@ -418,7 +418,10 @@
       color 0.35s var(--easing),
       text-shadow 0.35s var(--easing),
       border-color 0.35s var(--easing);
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+    text-shadow:
+      0 0 2px rgba(92, 24, 24, 0.35),
+      0 0 8px rgba(92, 24, 24, 0.10),
+      0 1px 0 rgba(0, 0, 0, 0.08);
   }
 
   .token:hover {
