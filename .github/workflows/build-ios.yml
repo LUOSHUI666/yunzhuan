@@ -50,3 +50,13 @@ jobs:
         with:
           name: yunzhuan-ios-unsigned
           path: yunzhuan-unsigned.ipa
+
+      - name: Generate release tag
+        id: tag
+        run: echo "tag=v$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          files: yunzhuan-unsigned.ipa
