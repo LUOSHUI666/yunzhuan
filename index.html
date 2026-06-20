@@ -669,7 +669,9 @@
     animation: compassGlow 6s ease-in-out infinite, yunBreath 4s ease-in-out infinite;
   }
   .token:hover {
-    animation: yunPaperShiver 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+    animation-name: yunPaperShiver;
+    animation-duration: 0.5s;
+    animation-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1);
   }
 
   /* 箭头青铜光泽（基于 Hover ⭐29K 技法） */
@@ -1625,6 +1627,7 @@
       var distance = 60 + Math.random() * 140;
       particle.style.setProperty('--px', (Math.cos(angle) * distance).toFixed(1) + 'px');
       particle.style.setProperty('--py', (Math.sin(angle) * distance).toFixed(1) + 'px');
+      particle.style.animation = 'yunInkSpread 0.8s cubic-bezier(0.25,0.1,0.25,1) forwards, particleBurst 0.8s var(--easing) forwards';
 
       document.body.appendChild(particle);
     }
@@ -1868,6 +1871,7 @@
     await typewrite(els.textEl, reading.text, TYPEWRITER_SPEED_TEXT);
 
     els.hintEl.classList.add('card-hint--visible');
+    els.hintEl.style.animation = 'yunFadeIn 1s cubic-bezier(0.25,0.1,0.25,1) forwards';
   }
 
   /* ═══════════════════════════════════════════════════
@@ -1907,6 +1911,11 @@
       if (ringPanelVisible && ringPanelEl && !ringPanelEl.contains(e.target) && e.target.id !== 'compass' && !document.getElementById('compass').contains(e.target)) {
         hideRingPanel();
       }
+    });
+
+    /* 窗口尺寸变化时重建环形面板位置 */
+    window.addEventListener('resize', function () {
+      if (ringPanelVisible && typeof showRingPanel === 'function') showRingPanel();
     });
   }
 
