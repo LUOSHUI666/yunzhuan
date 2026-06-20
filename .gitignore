@@ -1,8 +1,15 @@
 # Build
-/android/
-/ios/
-/node_modules/
-/www/
+*.apk
+*.aab
+*.ipa
+android/app/build/
+android/.gradle/
+android/build/
+android/capacitor-cordova-android-plugins/
+android/local.properties
+ios/App/build/
+ios/App/Pods/
+ios/App/.build/
 *.apk
 *.aab
 *.ipa
