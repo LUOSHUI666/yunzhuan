@@ -21,6 +21,9 @@ jobs:
       - name: Sync web assets
         run: mkdir -p www && cp index.html manifest.json sw.js icon-*.svg www/
 
+      - name: Init iOS project
+        run: npx cap add ios
+
       - name: Sync Capacitor
         run: npx cap sync ios
 
