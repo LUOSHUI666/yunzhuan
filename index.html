@@ -50,6 +50,7 @@
   body {
     width: 100vw;
     height: 100vh;
+    height: 100dvh;
     overflow: hidden;
     background: var(--bg-deep);
     font-family: var(--font-body);
@@ -683,8 +684,150 @@
   }
 
   /* ═══════════════════════════════════════════════════
-     无障碍
+     移动端适配 — 小屏缩放 + 触摸优化
      ═══════════════════════════════════════════════════ */
+
+  /* ── 平板/大屏手机 (≤768px) ── */
+  @media (max-width: 768px) {
+    #stage { gap: 24px; padding: 20px 12px; }
+
+    .compass {
+      width: 240px;
+      height: 240px;
+    }
+    .compass::before { inset: -22px; }
+    .compass-ring--outer {
+      width: 240px; height: 240px;
+      margin: -120px 0 0 -120px;
+      border-width: 2px;
+    }
+    .compass-ring--mid {
+      width: 208px; height: 208px;
+      margin: -104px 0 0 -104px;
+    }
+    .compass-ring--inner {
+      width: 176px; height: 176px;
+      margin: -88px 0 0 -88px;
+    }
+    .compass-center {
+      width: 136px; height: 136px;
+      margin: -68px 0 0 -68px;
+      font-size: 38px;
+      letter-spacing: 4px;
+    }
+    .trigram { font-size: 15px; }
+
+    .compass-row { gap: 18px; }
+    .arrow--left {
+      border-top-width: 14px; border-bottom-width: 14px;
+      border-right-width: 22px;
+    }
+    .arrow--right {
+      border-top-width: 14px; border-bottom-width: 14px;
+      border-left-width: 22px;
+    }
+
+    .token {
+      width: 64px;
+      height: 148px;
+      font-size: 32px;
+      letter-spacing: 5px;
+    }
+    #tokens-container { gap: 14px; }
+
+    .reading-card {
+      width: 92vw;
+      max-height: 65vh;
+      padding: 24px 28px;
+      gap: 12px;
+    }
+    .card-tag { font-size: 18px; }
+    .card-time { font-size: 14px; }
+    .card-text { font-size: 15px; line-height: 1.8; }
+    .card-hint { font-size: 12px; }
+  }
+
+  /* ── 小屏手机 (≤480px) ── */
+  @media (max-width: 480px) {
+    #stage { gap: 16px; padding: 12px 8px; }
+
+    .compass {
+      width: 190px;
+      height: 190px;
+    }
+    .compass::before { inset: -16px; }
+    .compass-ring--outer {
+      width: 190px; height: 190px;
+      margin: -95px 0 0 -95px;
+      border-width: 1.5px;
+    }
+    .compass-ring--mid {
+      width: 165px; height: 165px;
+      margin: -82px 0 0 -82px;
+    }
+    .compass-ring--inner {
+      width: 140px; height: 140px;
+      margin: -70px 0 0 -70px;
+    }
+    .compass-center {
+      width: 108px; height: 108px;
+      margin: -54px 0 0 -54px;
+      font-size: 30px;
+      letter-spacing: 3px;
+    }
+    .trigram { font-size: 13px; }
+
+    .compass-row { gap: 10px; }
+    .arrow--left {
+      border-top-width: 12px; border-bottom-width: 12px;
+      border-right-width: 18px;
+    }
+    .arrow--right {
+      border-top-width: 12px; border-bottom-width: 12px;
+      border-left-width: 18px;
+    }
+
+    .token {
+      width: 52px;
+      height: 128px;
+      font-size: 28px;
+      letter-spacing: 4px;
+    }
+    #tokens-container { gap: 10px; }
+
+    .reading-card {
+      width: 96vw;
+      max-height: 70vh;
+      padding: 20px 20px;
+      gap: 10px;
+    }
+    .card-tag { font-size: 16px; letter-spacing: 2px; }
+    .card-time { font-size: 13px; }
+    .card-text { font-size: 14px; line-height: 1.7; }
+    .card-hint { font-size: 11px; }
+  }
+
+  /* ── 触摸优化 ── */
+  .token, .arrow, .compass-center {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* ── 窄屏令牌换行 (≤360px) ── */
+  @media (max-width: 380px) {
+    #tokens-container {
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px 12px;
+      max-width: 280px;
+      margin: 0 auto;
+    }
+    .token {
+      width: 68px;
+      height: 136px;
+      font-size: 30px;
+    }
+  }
   @media (prefers-reduced-motion: reduce) {
     .star-layer { animation: none !important; }
     .hero-star { animation: none !important; }
