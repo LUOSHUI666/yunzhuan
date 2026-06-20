@@ -386,8 +386,76 @@
   .arrow--right { order: 2; }
 
   /* ═══════════════════════════════════════════════════
-     环形全览面板（预留，Step 2 未完成部分）
+     环形 16 型全览面板
+     圆心固定在罗盘中央，半径 58% 罗盘宽，16 选项均匀分布
      ═══════════════════════════════════════════════════ */
+  .ring-panel {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    z-index: 80;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .ring-panel--visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .ring-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+  .ring-option {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    font-family: var(--font-title);
+    font-size: 16px;
+    color: var(--bronze);
+    letter-spacing: 3px;
+    cursor: pointer;
+    pointer-events: auto;
+    opacity: 0;
+    text-shadow: 0 0 10px rgba(107, 58, 42, 0.3);
+    transition:
+      color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+      text-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+      font-size 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    white-space: nowrap;
+  }
+  .ring-option:hover {
+    color: var(--cinnabar);
+    text-shadow:
+      0 0 24px rgba(196, 30, 58, 0.6),
+      0 0 48px rgba(196, 30, 58, 0.25);
+    font-size: 22px;
+    z-index: 2;
+  }
+  .ring-option--active {
+    color: var(--cinnabar-light);
+    text-shadow:
+      0 0 18px rgba(226, 61, 61, 0.5),
+      0 0 36px rgba(196, 30, 58, 0.2);
+  }
+  .ring-panel--visible .ring-option {
+    animation: ringOptionAppear 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) var(--ring-delay) forwards;
+  }
+  @keyframes ringOptionAppear {
+    from { opacity: 0; transform: translate(-50%, -50%) scale(0.3); filter: blur(4px); }
+    60%  { opacity: 1; filter: blur(0); }
+    to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  }
+  @media (max-width: 768px) {
+    .ring-option { font-size: 14px; letter-spacing: 2px; }
+    .ring-option:hover { font-size: 19px; }
+  }
+  @media (max-width: 480px) {
+    .ring-option { font-size: 12px; letter-spacing: 1px; }
+    .ring-option:hover { font-size: 16px; }
+  }
 
   /* ═══════════════════════════════════════════════════
      心笺组
@@ -523,6 +591,109 @@
   @keyframes particleBurst {
     0%   { transform: translate(0, 0) scale(1); opacity: 1; }
     100% { transform: translate(var(--px), var(--py)) scale(0.2); opacity: 0; }
+  }
+
+  /* ═══════════════════════════════════════════════════
+     水墨动画集（基于 animate.css ⭐82K + Hover ⭐29K + Galaxy ⭐11K）
+     ═══════════════════════════════════════════════════ */
+  @keyframes yunFadeIn {
+    from { opacity: 0; transform: translateY(4px); filter: blur(1px); }
+    to   { opacity: 1; transform: translateY(0); filter: blur(0); }
+  }
+  @keyframes yunInkSpread {
+    from { opacity: 0; transform: scale(0.1); filter: blur(8px); }
+    40%  { opacity: 0.6; filter: blur(3px); }
+    70%  { opacity: 1; transform: scale(1.03); filter: blur(0); }
+    to   { opacity: 1; transform: scale(1); filter: blur(0); }
+  }
+  @keyframes yunBreath {
+    0%, 100% { transform: scale(1); opacity: 0.92; }
+    50%      { transform: scale(1.015); opacity: 1; }
+  }
+  @keyframes yunPaperShiver {
+    0%, 100% { transform: translateY(0); }
+    15%, 45%, 75% { transform: translateY(-2px); }
+    30%, 60%      { transform: translateY(2px); }
+  }
+  @keyframes yunStamp {
+    from { opacity: 0; transform: scale(0.3); }
+    50%  { opacity: 1; transform: scale(1.08); }
+    75%  { transform: scale(0.96); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+  @keyframes yunFloatUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes yunSway {
+    20%  { transform: rotate(8deg); }
+    40%  { transform: rotate(-5deg); }
+    60%  { transform: rotate(3deg); }
+    80%  { transform: rotate(-2deg); }
+    100% { transform: rotate(0deg); }
+  }
+  @keyframes yunFadeOut {
+    from { opacity: 1; transform: translateY(0); filter: blur(0); }
+    to   { opacity: 0; transform: translateY(-8px); filter: blur(2px); }
+  }
+
+  /* ═══════════════════════════════════════════════════
+     笺纸纹理（SVG feTurbulence 纤维+颗粒）
+     ═══════════════════════════════════════════════════ */
+  .token-texture {
+    position: relative;
+    isolation: isolate;
+  }
+  .token-texture::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='300'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7 0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.06'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)'/%3E%3C/svg%3E");
+    pointer-events: none;
+    mix-blend-mode: multiply;
+    opacity: 0.7;
+    z-index: 1;
+  }
+  .token-texture::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(180deg, rgba(70,50,20,0.08) 0%, transparent 15%, transparent 85%, rgba(70,50,20,0.06) 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* 罗盘青铜呼吸增强 + 心笺悬停微颤 */
+  .compass::before {
+    animation: compassGlow 6s ease-in-out infinite, yunBreath 4s ease-in-out infinite;
+  }
+  .token:hover {
+    animation: yunPaperShiver 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+  }
+
+  /* 箭头青铜光泽（基于 Hover ⭐29K 技法） */
+  .arrow {
+    position: relative;
+    overflow: visible;
+  }
+  .arrow::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(139,90,60,0) 0%, rgba(139,90,60,0.12) 50%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+    pointer-events: none;
+  }
+  .arrow:hover::before {
+    opacity: 1;
+  }
+
+  /* 卡片浮入 */
+  .reading-card--visible {
+    animation: yunFloatUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
   /* ═══════════════════════════════════════════════════
@@ -1320,7 +1491,78 @@
     stage.appendChild(container);
   }
 
-  /* ── 环形全览面板（预留） ── */
+  /* ── 环形全览面板 — 16型圆周菜单 ── */
+  var ringPanelVisible = false;
+  var ringPanelEl = null;
+
+  function renderRingPanel() {
+    if (ringPanelEl) return;
+    var panel = document.createElement('div');
+    panel.className = 'ring-panel';
+    panel.id = 'ring-panel';
+    var backdrop = document.createElement('div');
+    backdrop.className = 'ring-backdrop';
+    backdrop.addEventListener('click', function () { hideRingPanel(); });
+    panel.appendChild(backdrop);
+    var compass = document.getElementById('compass');
+    if (!compass) { document.body.appendChild(panel); ringPanelEl = panel; return; }
+    var compassRect = compass.getBoundingClientRect();
+    var cx = compassRect.left + compassRect.width / 2;
+    var cy = compassRect.top + compassRect.height / 2;
+    var radius = compassRect.width * 0.58;
+    MBTI_TYPES.forEach(function (type, i) {
+      var angle = (i / MBTI_TYPES.length) * 2 * Math.PI - Math.PI / 2;
+      var x = cx + radius * Math.cos(angle);
+      var y = cy + radius * Math.sin(angle);
+      var opt = document.createElement('div');
+      opt.className = 'ring-option';
+      if (type === MBTI_TYPES[currentIndex]) { opt.classList.add('ring-option--active'); }
+      opt.textContent = (TYPE_TAGS[type] || '') ? type + ' · ' + TYPE_TAGS[type] : type;
+      opt.setAttribute('data-mbti', type);
+      opt.style.left = x + 'px';
+      opt.style.top = y + 'px';
+      opt.style.setProperty('--ring-delay', (i * 0.03).toFixed(2) + 's');
+      opt.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var mbti = this.getAttribute('data-mbti');
+        var idx = MBTI_TYPES.indexOf(mbti);
+        if (idx >= 0) { currentIndex = idx; updateDisplay(); }
+        hideRingPanel();
+      });
+      panel.appendChild(opt);
+    });
+    document.body.appendChild(panel);
+    ringPanelEl = panel;
+  }
+
+  function toggleRingPanel() {
+    if (isCardVisible) return;
+    if (!ringPanelEl) renderRingPanel();
+    if (ringPanelVisible) { hideRingPanel(); }
+    else { showRingPanel(); }
+  }
+
+  function showRingPanel() {
+    if (isCardVisible) return;
+    if (ringPanelEl) { ringPanelEl.remove(); ringPanelEl = null; }
+    renderRingPanel();
+    if (!ringPanelEl) return;
+    var opts = ringPanelEl.querySelectorAll('.ring-option');
+    for (var i = 0; i < opts.length; i++) {
+      opts[i].classList.remove('ring-option--active');
+      if (opts[i].getAttribute('data-mbti') === MBTI_TYPES[currentIndex]) {
+        opts[i].classList.add('ring-option--active');
+      }
+    }
+    ringPanelEl.classList.add('ring-panel--visible');
+    ringPanelVisible = true;
+  }
+
+  function hideRingPanel() {
+    if (!ringPanelEl) return;
+    ringPanelEl.classList.remove('ring-panel--visible');
+    ringPanelVisible = false;
+  }
 
   /* ═══════════════════════════════════════════════════
      解读卡片 — 竹简卡片 DOM
@@ -1516,6 +1758,16 @@
       }
     });
 
+    /* 罗盘点按：弹出/收起环形全览 */
+    var compassEl = document.getElementById('compass');
+    if (compassEl) {
+      compassEl.addEventListener('click', function (e) {
+        if (isCardVisible || isAnimating) return;
+        e.stopPropagation();
+        toggleRingPanel();
+      });
+    }
+
     /* 令牌点击：启卦 */
     var tokensContainer = document.getElementById('tokens-container');
     if (tokensContainer) {
@@ -1644,10 +1896,18 @@
     createStarfield();
     createHeroStars();
     createShootingStar();
-    renderArrows();   /* 创建 compass-row + 箭头 */
-    renderCompass();  /* 罗盘追加到 compass-row */
-    renderTokens();   /* 六张符箓令牌 */
+    renderArrows();
+    renderCompass();
+    renderTokens();
+    renderRingPanel();
     bindEvents();
+
+    /* 全局点击关闭环形面板 */
+    document.addEventListener('click', function (e) {
+      if (ringPanelVisible && ringPanelEl && !ringPanelEl.contains(e.target) && e.target.id !== 'compass' && !document.getElementById('compass').contains(e.target)) {
+        hideRingPanel();
+      }
+    });
   }
 
   document.addEventListener('DOMContentLoaded', init);
