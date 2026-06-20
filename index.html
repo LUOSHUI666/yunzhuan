@@ -84,6 +84,24 @@
       radial-gradient(ellipse 80% 60% at 45% 50%, rgba(25, 30, 50, 0.06), transparent 65%);
   }
 
+  /* 紫微星云 — 缓慢呼吸叠加层 */
+  #starfield::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse 40% 30% at 30% 25%, rgba(40, 20, 60, 0.08), transparent 60%),
+      radial-gradient(ellipse 35% 35% at 70% 70%, rgba(20, 30, 55, 0.06), transparent 55%);
+    animation: nebulaBreathe 20s ease-in-out infinite;
+  }
+
+  @keyframes nebulaBreathe {
+    0%, 100% { opacity: 0.6; }
+    50%      { opacity: 1; }
+  }
+
   .star-layer {
     position: absolute;
     top: 50%;
@@ -336,39 +354,36 @@
   }
 
   /* ═══════════════════════════════════════════════════
-     青铜箭头
+     青铜箭头 — 纹样风格
      ═══════════════════════════════════════════════════ */
   .arrow {
-    width: 0;
-    height: 0;
+    width: 44px;
+    height: 44px;
     cursor: pointer;
-    transition: filter 0.2s var(--easing), opacity 0.2s var(--easing);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-title);
+    font-size: 24px;
+    color: var(--bronze);
     flex-shrink: 0;
-  }
-
-  .arrow--left {
-    order: 0;
-    border-top: 18px solid transparent;
-    border-bottom: 18px solid transparent;
-    border-right: 28px solid var(--bronze-light);
-    filter: drop-shadow(0 0 4px rgba(139, 90, 60, 0.4));
-  }
-
-  .arrow--right {
-    order: 2;
-    border-top: 18px solid transparent;
-    border-bottom: 18px solid transparent;
-    border-left: 28px solid var(--bronze-light);
-    filter: drop-shadow(0 0 4px rgba(139, 90, 60, 0.4));
+    text-shadow: 0 0 8px rgba(107, 58, 42, 0.3);
+    transition: color 0.3s var(--easing), text-shadow 0.3s var(--easing), opacity 0.2s var(--easing);
+    user-select: none;
+    -webkit-user-select: none;
   }
 
   .arrow:hover {
-    filter: drop-shadow(0 0 12px rgba(139, 90, 60, 0.85));
+    color: var(--bronze-light);
+    text-shadow: 0 0 16px rgba(139, 90, 60, 0.6), 0 0 32px rgba(139, 90, 60, 0.25);
   }
 
   .arrow:active {
-    opacity: 0.7;
+    opacity: 0.6;
   }
+
+  .arrow--left  { order: 0; }
+  .arrow--right { order: 2; }
 
   /* ═══════════════════════════════════════════════════
      环形全览面板（预留，Step 2 未完成部分）
@@ -725,14 +740,7 @@
     .trigram { font-size: 15px; }
 
     .compass-row { gap: 18px; }
-    .arrow--left {
-      border-top-width: 14px; border-bottom-width: 14px;
-      border-right-width: 22px;
-    }
-    .arrow--right {
-      border-top-width: 14px; border-bottom-width: 14px;
-      border-left-width: 22px;
-    }
+    .arrow { width: 36px; height: 36px; font-size: 20px; }
 
     .token {
       width: 64px;
@@ -785,14 +793,7 @@
     .trigram { font-size: 13px; }
 
     .compass-row { gap: 10px; }
-    .arrow--left {
-      border-top-width: 12px; border-bottom-width: 12px;
-      border-right-width: 18px;
-    }
-    .arrow--right {
-      border-top-width: 12px; border-bottom-width: 12px;
-      border-left-width: 18px;
-    }
+    .arrow { width: 32px; height: 32px; font-size: 18px; }
 
     .token {
       width: 52px;
@@ -907,9 +908,10 @@
      ═══════════════════════════════════════════════════ */
   /* ── 星图层：极慢天球漂移 ── */
   const STAR_LAYERS = [
-    { count: 260, size: 1, blur: 0, opacity: 0.24, speed: 1100, driftX: 120, driftY: -30 },
-    { count: 110, size: 2, blur: 1, opacity: 0.38, speed: 1400, driftX: 180, driftY: 20 },
-    { count: 50,  size: 2, blur: 2, opacity: 0.50, speed: 1800, driftX: 250, driftY: -50 }
+    { count: 380, size: 1, blur: 0, opacity: 0.20, speed: 1100, driftX: 120, driftY: -30 },
+    { count: 180, size: 2, blur: 1, opacity: 0.32, speed: 1400, driftX: 180, driftY: 20 },
+    { count: 90,  size: 2, blur: 2, opacity: 0.42, speed: 1800, driftX: 250, driftY: -50 },
+    { count: 30,  size: 3, blur: 3, opacity: 0.28, speed: 2200, driftX: 300, driftY: -80 }
   ];
 
   /* ── 星色：真实恒星分布 — 大量冷白矮星 + 少量暖黄 ── */
@@ -933,10 +935,14 @@
     { x: '65vw', y: '72vh', size: 3, glow: 5,  color: 'rgba(215,228,242,0.9)',  period: 5.8, delay: 1.5, dip: 0.3 },
     { x: '48vw', y: '55vh', size: 2, glow: 4,  color: 'rgba(248,195,140,0.84)', period: 2.2, delay: 3.5, dip: 0.48 },
     { x: '42vw', y: '38vh', size: 1, glow: 2,  color: 'rgba(225,235,245,0.75)', period: 3.0, delay: 4.2, dip: 0.38 },
-    { x: '18vw', y: '78vh', size: 2, glow: 3,  color: 'rgba(242,228,185,0.82)', period: 4.8, delay: 1.0, dip: 0.35 }
+    { x: '18vw', y: '78vh', size: 2, glow: 3,  color: 'rgba(242,228,185,0.82)', period: 4.8, delay: 1.0, dip: 0.35 },
+    { x: '78vw', y: '82vh', size: 2, glow: 4,  color: 'rgba(210,228,242,0.8)',  period: 3.6, delay: 2.8, dip: 0.32 },
+    { x: '32vw', y: '5vh',  size: 3, glow: 6,  color: 'rgba(200,215,238,0.9)',  period: 4.2, delay: 0.4, dip: 0.28 },
+    { x: '60vw', y: '42vh', size: 2, glow: 3,  color: 'rgba(245,218,165,0.78)', period: 2.0, delay: 5.0, dip: 0.5 },
+    { x: '95vw', y: '15vh', size: 2, glow: 4,  color: 'rgba(218,230,245,0.85)', period: 3.4, delay: 1.6, dip: 0.36 }
   ];
 
-  /* ── 流星：单颗稀有，长间隔 ── */
+  /* ── 流星：双颗交替，间隔 8-16s ── */
   const SHOOTING_STAR = { x: '90vw', y: '12vh', dx: '-80vw', dy: '45vh', dur: 1.5, delay: 0 };
 
   /* ═══════════════════════════════════════════════════
@@ -1208,7 +1214,7 @@
     document.body.appendChild(star);
 
     /* 流星结束后重建，间隔 15-35s */
-    var cycle = (s.dur + s.delay) * 1000;
+    /* 流星结束后重建，间隔 8-16s */
     setInterval(function () {
       var old = document.querySelector('.shooting-star');
       if (old) old.remove();
@@ -1221,7 +1227,7 @@
       next.style.setProperty('--shoot-duration', (1.2 + Math.random() * 1.6).toFixed(1) + 's');
       next.style.setProperty('--shoot-delay', '0s');
       document.body.appendChild(next);
-    }, 20000 + Math.random() * 15000);
+    }, 8000 + Math.random() * 8000);
   }
 
   /* ═══════════════════════════════════════════════════
@@ -1277,10 +1283,12 @@
     var left = document.createElement('div');
     left.className = 'arrow arrow--left';
     left.id = 'arrow-left';
+    left.textContent = '◂';
 
     var right = document.createElement('div');
     right.className = 'arrow arrow--right';
     right.id = 'arrow-right';
+    right.textContent = '▸';
 
     row.appendChild(left);
     row.appendChild(right);
