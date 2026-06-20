@@ -10,11 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -24,18 +19,14 @@ jobs:
         uses: android-actions/setup-android@v3
         with:
           cmdline-tools-version: 11076708
-          packages: 'platforms;android-36 build-tools;36.0.0'
+          packages: 'platforms;android-36 build-tools;36.0.0 platform-tools'
 
-      - name: Install deps
-        run: npm install
+      - name: Copy web assets to android assets
+        run: |
+          mkdir -p android/app/src/main/assets/public
+          cp index.html manifest.json sw.js icon-*.svg android/app/src/main/assets/public/
 
-      - name: Copy web assets
-        run: mkdir -p www && cp index.html manifest.json sw.js icon-*.svg www/
-
-      - name: Capacitor sync
-        run: npx cap sync android
-
-      - name: Build debug APK
+      - name: Build APK
         run: cd android && chmod +x gradlew && ./gradlew assembleDebug
 
       - name: Upload APK
