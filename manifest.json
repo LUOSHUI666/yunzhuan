@@ -1,7 +1,7 @@
 {
-  "name": "云篆 · 道门智慧",
+  "name": "云篆 · 东方人格探索",
   "short_name": "云篆",
-  "description": "以符箓美学问本命之道 — 道家仪式化 MBTI 顾问",
+  "description": "东方美学人格体验 — 仪式化交互探索十六型人格",
   "start_url": "./index.html",
   "scope": ".",
   "display": "standalone",

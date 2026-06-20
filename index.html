@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>云篆 · 道门智慧 MBTI 顾问</title>
 
 <!-- PWA -->
 <link rel="manifest" href="manifest.json">
@@ -11,12 +10,12 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="云篆">
-<link rel="apple-touch-icon" href="icon-192.svg">
+<title>云篆 · 东方人格探索</title>
 
 <!--
   ═══════════════════════════════════════════════════════════
-  云篆 YunZhuan — 道门智慧 MBTI 顾问
-  单文件离线 Demo · 双击 index.html 即可运行
+  云篆 YunZhuan — 东方美学人格体验
+  单文件离线 PWA · 双击 index.html 即可运行
   架构：配置 → 数据 → 渲染 → 动效 → 状态机，各模块解耦
   ═══════════════════════════════════════════════════════════
 -->
@@ -376,7 +375,7 @@
      ═══════════════════════════════════════════════════ */
 
   /* ═══════════════════════════════════════════════════
-     令牌组
+     心笺组
      ═══════════════════════════════════════════════════ */
   #tokens-container {
     display: flex;
@@ -388,7 +387,7 @@
   .token {
     width: 80px;
     height: 180px;
-    /* 黄符纸基底 — 自然老化肌理 */
+    /* 黄笺纸基底 — 自然老化肌理 */
     background-color: #C8B896;
     background-image:
       /* 四角不规则暗沉 */
@@ -855,7 +854,7 @@
 <body>
 
 <!-- ═══════════════════════════════════════════════════════════
-  舞台结构（对应仪式五幕：入境→问道→启卦→观象→归真）
+  舞台结构（对应仪式五幕：入境→问道→叩心→观象→归真）
 ═══════════════════════════════════════════════════════════ -->
 
 <!-- 背景星图层 -->
@@ -948,7 +947,7 @@
 
 <!-- ============================================================
   模块 3：数据层 <script data-module="data">
-  核心对象 TOKEN_DATA，按 类型 > 令牌 > [{text, time}] 存储
+  核心对象 TOKEN_DATA，按 类型 > 心笺 > [{text, time}] 存储
   辅助函数：
     getReading(mbti, token) — 随机抽取 + 防重复
     resetSessionHistory()   — 归真时清除记录
@@ -1444,10 +1443,10 @@
     状态：{ currentMBTI, selectedToken, isCardVisible, sessionHistory }
     事件：
       罗盘左右箭头  → 切换 MBTI 类型
-      罗盘本体点击  → 弹出/收起环形全览
-      环形选项点击  → 选中类型 + 收起面板
-      令牌点击      → 启卦：粒子 → 飞升 → 打字机 → 卡片
-      卡片外点击    → 归真：淡出 → 复位 → 清状态
+          罗盘本体点击  → 弹出/收起环形全览
+          环形选项点击  → 选中类型 + 收起面板
+          心笺点击      → 叩心：粒子 → 飞升 → 打字机 → 卡片
+          卡片外点击    → 归真：淡出 → 复位 → 清状态
     入口：init()
 ============================================================ -->
 <script data-module="app">
