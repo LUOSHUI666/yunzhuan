@@ -4,417 +4,324 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#0D0D14">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>云篆 · 东方人格探索</title>
+<title>云篆</title>
 <style>
-/* ═══════ 云篆 v3 — 融合三方案：极简暗色框架+暖纸配色+沉浸卡片 ═══════ */
 :root{
-  --bg:#0D0D14;--bronze:#6B3A2A;--bronze-l:#8B5A3C;--bronze-d:#3E2418;--bronze-glow:#9E6B4F;
-  --cinnabar:#C41E3A;--cinnabar-l:#E65050;
-  --paper:#C8B896;--paper-l:#D4C8A8;--paper-d:#B8A47E;
-  --ink:#3C1010;--ink-l:#4A3728;
-  --bamboo:#F0EAD6;--bamboo-d:#E0D5C0;--bamboo-fiber:#DDD2B8;
-  --warm-gold:#9B7E5A;--warm-amber:rgba(180,130,80,.12);
-  --ease:cubic-bezier(.16,1,.3,1);
-  --compass:240px;
+  --bg:#0D0D14;
+  --brz:#6B3A2A;--brzL:#8B5A3C;--brzD:#3E2418;
+  --cin:#C41E3A;
+  --ppr:#C8B896;--pprL:#D4C8A8;--pprD:#B8A47E;
+  --ink:#3C1010;
+  --bam:#F0EAD6;--bamD:#E0D5C0;
+  --gld:#9B7E5A;
+  --ease:cubic-bezier(.16,1,.3,1)
 }
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+*{margin:0;padding:0;box-sizing:border-box}
 body{
   width:100vw;height:100dvh;overflow:hidden;background:var(--bg);
-  font-family:'KaiTi','楷体','STKaiti','SimSun',serif;color:var(--bamboo);
-  user-select:none;-webkit-user-select:none;
+  font-family:'KaiTi','楷体',serif;color:var(--bam);
   -webkit-tap-highlight-color:transparent;touch-action:manipulation;
+  user-select:none;-webkit-user-select:none
 }
-/* 暖色底光叠加层 */
+/* 暖色底光 */
 body::before{
-  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   background:
-    radial-gradient(ellipse 60% 40% at 35% 30%,rgba(100,60,35,.06),transparent 55%),
-    radial-gradient(ellipse 50% 50% at 70% 65%,rgba(80,45,25,.05),transparent 50%),
-    radial-gradient(ellipse 80% 30% at 50% 20%,rgba(60,35,20,.04),transparent 60%),
-    linear-gradient(180deg,rgba(100,60,35,.03) 0%,transparent 30%,transparent 70%,rgba(80,45,25,.04) 100%);
+    radial-gradient(ellipse 50% 35% at 40% 25%,rgba(90,55,30,.055),transparent 50%),
+    radial-gradient(ellipse 45% 40% at 65% 60%,rgba(70,40,20,.04),transparent 50%),
+    radial-gradient(ellipse 70% 25% at 50% 15%,rgba(55,30,15,.03),transparent 55%),
+    linear-gradient(180deg,rgba(90,45,20,.025),transparent 35%,transparent 65%,rgba(70,35,20,.03))
 }
-canvas#starfield{position:fixed;inset:0;z-index:0;pointer-events:none}
+canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
 
-/* ── 主舞台 ── */
-#stage{
+/* 主舞台 */
+main{
   position:fixed;inset:0;z-index:1;
-  display:flex;flex-direction:column;justify-content:center;align-items:center;
-  gap:28px;padding:12px 4px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:24px;padding:8px
 }
 
-/* ── 罗盘行 ── */
-.compass-row{display:flex;align-items:center;gap:12px}
+/* 罗盘行 */
+.cr{display:flex;align-items:center;gap:14px}
 
-/* ── 箭头 ── */
-.arrow{
-  width:52px;height:52px;min-width:52px;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;
-  font-size:28px;color:var(--bronze);cursor:pointer;
-  user-select:none;-webkit-user-select:none;
-  transition:color .2s,text-shadow .2s;
+/* 箭头 */
+.ar{
+  width:52px;height:52px;flex-shrink:0;
+  display:grid;place-items:center;
+  font-size:30px;color:var(--brz);cursor:pointer;
+  transition:color .15s
 }
-.arrow:active{color:var(--bronze-l);text-shadow:0 0 16px rgba(158,107,79,.5)}
+.ar:active{color:var(--brzL)}
 
-/* ── 罗盘 ── */
-.compass{
-  position:relative;width:var(--compass);height:var(--compass);flex-shrink:0;
+/* 罗盘 */
+.co{
+  position:relative;width:240px;height:240px;flex-shrink:0;
   will-change:transform;
-  animation:spin 120s linear infinite;
+  animation:coS 120s linear infinite
 }
-@keyframes spin{to{transform:rotate(360deg)}}
-.compass-ring{
+@keyframes coS{to{transform:rotate(360deg)}}
+.co-r{
   position:absolute;border-radius:50%;top:50%;left:50%;pointer-events:none;
-  will-change:transform;transform:translateZ(0);backface-visibility:hidden;
+  will-change:transform;transform:translateZ(0);backface-visibility:hidden
 }
-.compass-ring--outer{
+.co-r--o{
   width:100%;height:100%;margin:-50% 0 0 -50%;
-  border:2.5px solid var(--bronze);
-  box-shadow:0 0 24px rgba(155,110,75,.18),inset 0 0 40px rgba(155,110,75,.08);
-  animation:ringRev 90s linear infinite;
+  border:2.5px solid var(--brz);
+  box-shadow:0 0 24px rgba(155,110,75,.15),inset 0 0 36px rgba(155,110,75,.06);
+  animation:rRo 90s linear infinite
 }
-.compass-ring--mid{
+.co-r--m{
   width:86%;height:86%;margin:-43% 0 0 -43%;
-  border:1px dashed rgba(139,90,60,.45);
-  animation:ringFwd 70s linear infinite;
+  border:1px dashed rgba(139,90,60,.4);
+  animation:rRi 70s linear infinite
 }
-.compass-ring--inner{
+.co-r--i{
   width:73%;height:73%;margin:-36.5% 0 0 -36.5%;
-  border:1px solid rgba(107,58,42,.4);
-  animation:ringRev 110s linear infinite;
+  border:1px solid rgba(107,58,42,.35);
+  animation:rRo 110s linear infinite
 }
-@keyframes ringRev{to{transform:translateZ(0) rotate(-360deg)}}
-@keyframes ringFwd{to{transform:translateZ(0) rotate(360deg)}}
+@keyframes rRo{to{transform:translateZ(0) rotate(-360deg)}}
+@keyframes rRi{to{transform:translateZ(0) rotate(360deg)}}
 
 /* 天池 */
-.compass-center{
-  position:absolute;top:50%;left:50%;width:56%;height:56%;
-  margin:-28% 0 0 -28%;border-radius:50%;
+.co-c{
+  position:absolute;top:50%;left:50%;width:56%;height:56%;margin:-28% 0 0 -28%;
+  border-radius:50%;
   background:radial-gradient(circle at 45% 40%,#201a18,var(--bg) 70%);
-  border:1.5px solid rgba(107,58,42,.35);
-  display:flex;align-items:center;justify-content:center;
-  font-size:32px;letter-spacing:4px;color:var(--bronze-l);
-  animation:centerSpin 120s linear infinite;
-  text-shadow:0 0 10px rgba(139,90,60,.25);
-  cursor:pointer;z-index:2;
+  border:1.5px solid rgba(107,58,42,.3);
+  display:grid;place-items:center;
+  font-size:32px;letter-spacing:4px;color:var(--brzL);
+  animation:coC 120s linear infinite;
+  text-shadow:0 0 10px rgba(139,90,60,.2);
+  cursor:pointer;z-index:2
 }
-@keyframes centerSpin{to{transform:rotate(-360deg)}}
-.compass-center.flash{animation:centerFlash .15s var(--ease)}
-@keyframes centerFlash{50%{transform:rotate(-360deg) scale(1.12)}}
+@keyframes coC{to{transform:rotate(-360deg)}}
+.co-c.f{animation:coCF .15s var(--ease)}
+@keyframes coCF{50%{transform:rotate(-360deg) scale(1.12)}}
 
-/* ── 心笺 — 暖纸纹理 ── */
-#tokens-container{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
-.token{
+/* 心笺 */
+.tc{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.tk{
   width:56px;height:130px;
   background:
-    radial-gradient(ellipse at 0% 0%,rgba(80,55,25,.18),transparent 35%),
-    radial-gradient(ellipse at 100% 0%,rgba(70,50,20,.14),transparent 30%),
-    radial-gradient(ellipse at 0% 100%,rgba(70,50,20,.12),transparent 32%),
-    radial-gradient(ellipse at 100% 100%,rgba(75,52,22,.16),transparent 28%),
-    repeating-linear-gradient(0deg,transparent,transparent 4px,rgba(100,80,50,.02) 4px,rgba(100,80,50,.02) 5px),
-    linear-gradient(180deg,var(--paper-d),var(--paper) 30%,var(--paper-l) 50%,var(--paper) 70%,var(--paper-d));
-  border:1px solid rgba(70,50,20,.2);
-  box-shadow:0 3px 16px rgba(0,0,0,.4),inset 0 0 40px rgba(70,50,20,.04);
-  display:flex;align-items:center;justify-content:center;
+    radial-gradient(ellipse at 0% 0%,rgba(80,55,25,.16),transparent 35%),
+    radial-gradient(ellipse at 100% 0%,rgba(70,50,20,.12),transparent 30%),
+    radial-gradient(ellipse at 0% 100%,rgba(70,50,20,.1),transparent 32%),
+    radial-gradient(ellipse at 100% 100%,rgba(75,52,22,.14),transparent 28%),
+    repeating-linear-gradient(0deg,transparent,transparent 4px,rgba(100,80,50,.018) 4px,rgba(100,80,50,.018) 5px),
+    linear-gradient(180deg,var(--pprD),var(--ppr) 30%,var(--pprL) 50%,var(--ppr) 70%,var(--pprD));
+  border:1px solid rgba(70,50,20,.18);
+  box-shadow:0 3px 16px rgba(0,0,0,.35),inset 0 0 36px rgba(70,50,20,.03);
+  display:grid;place-items:center;
   writing-mode:vertical-rl;text-orientation:upright;
   font-size:30px;font-weight:bold;color:var(--ink);letter-spacing:6px;
   cursor:pointer;
-  animation:float var(--fd) ease-in-out infinite;
+  animation:tkF var(--fd) ease-in-out infinite;
   animation-delay:var(--fdel);
-  transition:transform .35s var(--ease),opacity .35s var(--ease),box-shadow .3s;
-  text-shadow:0 0 3px rgba(60,16,16,.45),0 0 10px rgba(60,16,16,.15);
+  transition:transform .35s var(--ease),opacity .35s var(--ease),box-shadow .25s;
+  text-shadow:0 0 3px rgba(60,16,16,.4),0 0 10px rgba(60,16,16,.12)
 }
-@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(var(--fa))}}
-.token:active{
-  color:var(--cinnabar);
-  text-shadow:0 0 14px rgba(196,30,58,.45),0 0 32px rgba(196,30,58,.2);
-  box-shadow:0 6px 24px rgba(196,30,58,.12),0 2px 8px rgba(0,0,0,.45);
-  border-color:rgba(196,30,58,.3);
-}
-.token--selected{animation:none!important;z-index:50;transition:transform .8s var(--ease),opacity .8s var(--ease)}
-.token--dimmed{animation:none!important;opacity:0!important;pointer-events:none;transition:opacity .6s var(--ease)}
+@keyframes tkF{0%,100%{transform:translateY(0)}50%{transform:translateY(var(--fa))}}
+.tk:active{color:var(--cin);text-shadow:0 0 14px rgba(196,30,58,.4),0 0 28px rgba(196,30,58,.18);box-shadow:0 6px 24px rgba(196,30,58,.1),0 2px 8px rgba(0,0,0,.4);border-color:rgba(196,30,58,.25)}
+.tk--s{animation:none!important;z-index:50;transition:transform .8s var(--ease),opacity .8s var(--ease)}
+.tk--d{animation:none!important;opacity:0!important;pointer-events:none;transition:opacity .6s var(--ease)}
 
-/* ── 粒子 ── */
-.particle{
+/* 粒子 */
+.prt{
   position:fixed;width:4px;height:4px;border-radius:50%;z-index:100;pointer-events:none;
-  background:var(--warm-gold);box-shadow:0 0 6px rgba(155,126,90,.5);
-  animation:fly .8s var(--ease) forwards;
+  background:var(--gld);box-shadow:0 0 6px rgba(155,126,90,.45);
+  animation:prtF .8s var(--ease) forwards
 }
-@keyframes fly{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--px),var(--py)) scale(0)}}
+@keyframes prtF{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--px),var(--py)) scale(0)}}
 
-/* ── 竹简卡片 ── */
-.reading-card{
+/* 竹简卡片 */
+.rd{
   position:fixed;top:50%;left:50%;z-index:60;
   transform:translate(-50%,-50%) scale(.92);
   width:min(90vw,480px);max-height:75vh;
   background:
-    repeating-linear-gradient(0deg,transparent,transparent 6px,rgba(200,180,150,.06) 6px,rgba(200,180,150,.06) 7px),
-    linear-gradient(180deg,var(--bamboo),var(--bamboo-fiber) 25%,var(--bamboo) 50%,var(--bamboo-d));
-  border:2px solid rgba(139,90,60,.25);
-  border-radius:4px;
-  box-shadow:0 8px 40px rgba(0,0,0,.55),0 2px 8px rgba(0,0,0,.25),inset 0 0 60px rgba(180,120,70,.05);
+    repeating-linear-gradient(0deg,transparent,transparent 8px,rgba(200,180,150,.05) 8px,rgba(200,180,150,.05) 9px),
+    linear-gradient(180deg,var(--bam),var(--bam) 40%,var(--bamD));
+  border:2px solid rgba(139,90,60,.22);border-radius:3px;
+  box-shadow:0 8px 40px rgba(0,0,0,.5),0 2px 8px rgba(0,0,0,.2),inset 0 0 50px rgba(180,120,70,.04);
   padding:24px 20px 16px;display:flex;flex-direction:column;gap:12px;
   opacity:0;pointer-events:none;overflow-y:auto;
-  font-family:'SimSun','宋体','STSong','FangSong',serif;
-  transition:opacity .45s var(--ease),transform .5s var(--ease);
+  font-family:'SimSun','宋体',serif;
+  transition:opacity .45s var(--ease),transform .5s var(--ease)
 }
-.reading-card--visible{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
-.card-tag{font-size:20px;color:var(--bronze);letter-spacing:3px;text-align:center;font-weight:bold}
-.card-time{font-size:13px;color:var(--ink-l);text-align:center;opacity:.65}
-.card-text{font-size:16px;color:var(--ink);line-height:1.9;text-align:justify;padding:2px 0}
-.card-hint{font-size:12px;color:var(--bronze);text-align:center;opacity:0;margin-top:8px;padding-top:10px;border-top:1px solid rgba(139,90,60,.12)}
-.card-hint--visible{opacity:.5;transition:opacity .8s}
+.rd--v{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
+.rd-tg{font-size:20px;color:var(--brz);letter-spacing:3px;text-align:center;font-weight:bold}
+.rd-tm{font-size:13px;color:var(--brzD);text-align:center;opacity:.6}
+.rd-tx{font-size:16px;color:var(--ink);line-height:1.9;text-align:justify}
+.rd-ht{font-size:12px;color:var(--brz);text-align:center;opacity:0;margin-top:8px;padding-top:10px;border-top:1px solid rgba(139,90,60,.1)}
+.rd-ht--v{opacity:.45;transition:opacity .6s}
 
-/* ── 环形面板 ── */
-.ring-panel{position:fixed;inset:0;z-index:55;display:none}
-.ring-panel--visible{display:block}
-.ring-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.55)}
-.ring-option{
+/* 环形面板 */
+.rp{position:fixed;inset:0;z-index:55;display:none}
+.rp--v{display:block}
+.rp-bd{position:absolute;inset:0;background:rgba(0,0,0,.5)}
+.rp-o{
   position:absolute;transform:translate(-50%,-50%);
-  font-size:13px;color:var(--bronze);letter-spacing:2px;white-space:nowrap;
+  font-size:13px;color:var(--brz);letter-spacing:2px;white-space:nowrap;
   padding:6px 12px;border-radius:12px;
-  background:rgba(13,13,20,.85);border:1px solid rgba(107,58,42,.25);
-  opacity:0;cursor:pointer;touch-action:manipulation;
-  animation:ringPop .4s var(--ease) forwards;animation-delay:var(--rd);
+  background:rgba(13,13,20,.85);border:1px solid rgba(107,58,42,.22);
+  opacity:0;cursor:pointer;
+  animation:rpA .4s var(--ease) forwards;animation-delay:var(--rd)
 }
-@keyframes ringPop{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
-.ring-option--active{color:var(--cinnabar-l);border-color:rgba(196,30,58,.4);text-shadow:0 0 8px rgba(196,30,58,.25)}
+@keyframes rpA{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+.rp-o--a{color:var(--cin);border-color:rgba(196,30,58,.35);text-shadow:0 0 8px rgba(196,30,58,.2)}
 </style>
 </head>
 <body>
-<canvas id="starfield"></canvas>
-<div id="stage">
-  <div class="compass-row">
-    <div class="arrow" id="arrow-left">◂</div>
-    <div class="compass" id="compass">
-      <div class="compass-ring compass-ring--outer"></div>
-      <div class="compass-ring compass-ring--mid"></div>
-      <div class="compass-ring compass-ring--inner"></div>
-      <div class="compass-center" id="mbti-display">INFP</div>
+<canvas id="c"></canvas>
+<main id="m">
+  <div class="cr" id="cr">
+    <div class="ar" id="al">◂</div>
+    <div class="co" id="co">
+      <div class="co-r co-r--o"></div>
+      <div class="co-r co-r--m"></div>
+      <div class="co-r co-r--i"></div>
+      <div class="co-c" id="cc">INFP</div>
     </div>
-    <div class="arrow" id="arrow-right">▸</div>
+    <div class="ar" id="ar">▸</div>
   </div>
-  <div id="tokens-container"></div>
-</div>
-
+  <div class="tc" id="tc"></div>
+</main>
 <script>
-/* ═══════════ 云篆 v3 — 配置+数据+Canvas星图+渲染+状态机 ═══════════ */
+/* ═══════════════════════════════════════
+   云篆 v3 · 从零重写 · 420行
+   Canvas星图 / 暖纸纹理 / 极简暗色
+   ═══════════════════════════════════════ */
 
-/* ── 模块 1：配置 ── */
-const MBTI_TYPES=['INFP','INFJ','INTJ','ENFP','ENFJ','ENTJ','ESFP','ESFJ','ESTP','ESTJ','ISFP','ISFJ','ISTP','ISTJ','INTP','ENTP'];
-const TOKENS=['迷途',...onst TYPE_TAGS={
-  INFP:'逍遥散人',INTJ:'弈天者',INFJ:'渡人舟',ENFP:'逐风客',
-  ENFJ:'掌灯人',ENTJ:'定海针',ESFP:'弄潮儿',ESFJ:'守灶人',
-  ESTP:'破阵子',ESTJ:'执尺人',ISFP:'抱琴客',ISFJ:'系铃人',
-  ISTP:'淬剑客',ISTJ:'守夜人',INTP:'观星客',ENTP:'纵火者'
-};
-const TW_SPEED=45,PCNT=20,TOKEN_AMP=[-5,5];
+var C=['INFP','INFJ','INTJ','ENFP','ENFJ','ENTJ','ESFP','ESFJ','ESTP','ESTJ','ISFP','ISFJ','ISTP','ISTJ','INTP','ENTP'];
+var T=['迷途','坎','执','散','渊','生'];
+var TAGS={INFP:'逍遥散人',INTJ:'弈天者',INFJ:'渡人舟',ENFP:'逐风客',ENFJ:'掌灯人',ENTJ:'定海针',ESFP:'弄潮儿',ESFJ:'守灶人',ESTP:'破阵子',ESTJ:'执尺人',ISFP:'抱琴客',ISFJ:'系铃人',ISTP:'淬剑客',ISTJ:'守夜人',INTP:'观星客',ENTP:'纵火者'};
+var TW=45,PN=20,TA=[-5,5];
 
-/* ── 模块 2：文案 ── */
-const TOKEN_DATA={INFP:{
-  迷途:[{t:'雾中有路，只是眼看不见。闭上眼，用脚底去听——听那最细的根须如何选择泥土的方向。',s:'卯时初刻 · 晨露未晞'},{t:'迷途本身或许就是归途。何必急着走出这片森林？林深处，才有别人不曾见过的月光。',s:'亥时三刻 · 月满西楼'}],
-  坎:[{t:'水遇石则绕，遇崖则落。不是石头在挡你——是水还不知道自己要去哪。',s:'辰时二刻 · 云开雾散'},{t:'低处的河流最清楚高山的重量。每道坎都是山在跟你说话。',s:'申时初刻 · 日影西斜'}],
-  执:[{t:'手握得越紧，沙子流得越快。松开看看——掌心还有天空。',s:'午时正刻 · 烈日当空'},{t:'执着是一根绳索，一头系着你，一头系着幻影。剪断哪头更疼？',s:'子时三刻 · 夜深人静'}],
-  散:[{t:'云散了，山还在。你以为失去的，不过是被风吹散的形状。',s:'酉时二刻 · 归鸟入林'},{t:'蒲公英从不规划自己的落点，但每一片都找到了泥土。',s:'巳时初刻 · 万物生发'}],
-  渊:[{t:'深渊并不吞噬光——它只是让光学会沉默。在沉默里，你才能听见自己的回声。',s:'丑时二刻 · 万籁俱寂'},{t:'站在渊边的人，比站在山顶的人更懂什么是高度。',s:'戌时初刻 · 暮色四合'}],
-  生:[{t:'种子在破土之前，谁也不知道它是一棵树还是一朵花。生长本身就是答案。',s:'寅时三刻 · 黎明将至'},{t:'活着不是奔跑，是像竹子一样——一节一节地往上，每节都留下一道痕。',s:'未时初刻 · 蝉鸣如雨'}]
+/* 文案 */
+var D={INFP:{
+  迷途:[{a:'雾中有路，只是眼看不见。闭上眼，用脚底去听——听那最细的根须如何选择泥土的方向。',b:'卯时初刻 · 晨露未晞'},{a:'迷途本身或许就是归途。何必急着走出这片森林？林深处，才有别人不曾见过的月光。',b:'亥时三刻 · 月满西楼'}],
+  坎:[{a:'水遇石则绕，遇崖则落。不是石头在挡你——是水还不知道自己要去哪。',b:'辰时二刻 · 云开雾散'},{a:'低处的河流最清楚高山的重量。每道坎都是山在跟你说话。',b:'申时初刻 · 日影西斜'}],
+  执:[{a:'手握得越紧，沙子流得越快。松开看看——掌心还有天空。',b:'午时正刻 · 烈日当空'},{a:'执着是一根绳索，一头系着你，一头系着幻影。剪断哪头更疼？',b:'子时三刻 · 夜深人静'}],
+  散:[{a:'云散了，山还在。你以为失去的，不过是被风吹散的形状。',b:'酉时二刻 · 归鸟入林'},{a:'蒲公英从不规划自己的落点，但每一片都找到了泥土。',b:'巳时初刻 · 万物生发'}],
+  渊:[{a:'深渊并不吞噬光——它只是让光学会沉默。在沉默里，你才能听见自己的回声。',b:'丑时二刻 · 万籁俱寂'},{a:'站在渊边的人，比站在山顶的人更懂什么是高度。',b:'戌时初刻 · 暮色四合'}],
+  生:[{a:'种子在破土之前，谁也不知道它是一棵树还是一朵花。生长本身就是答案。',b:'寅时三刻 · 黎明将至'},{a:'活着不是奔跑，是像竹子一样——一节一节地往上，每节都留下一道痕。',b:'未时初刻 · 蝉鸣如雨'}]
 },INTJ:{
-  迷途:[{t:'迷途是棋局的一部分。真正的大师永远不会走丢——他们只是在计算下一手的位置。',s:'卯时初刻 · 晨露未晞'},{t:'方向比速度重要。站在原地看星图，胜过蒙头狂奔三百里。',s:'子时正刻 · 星河在天'}],
-  坎:[{t:'障碍是自然生成的过滤器。跨不过去的，原本就不属于你的路径。',s:'辰时三刻 · 云开雾散'},{t:'把坎当成台阶。踩上去，你的视野就会高于原来的平面。',s:'申时二刻 · 日影西斜'}],
-  执:[{t:'执着是一柄双刃剑。用它开路可以，但别让它成为你唯一握住的武器。',s:'午时初刻 · 烈日当空'},{t:'放手不是因为放弃了目标，而是找到了更优的策略。',s:'丑时初刻 · 万籁俱寂'}],
-  散:[{t:'分散是集中前的蓄力。拉弓越满，箭越快。',s:'酉时初刻 · 暮色初临'},{t:'你以为在散落，其实在布局。有些棋要到终局才看得懂。',s:'巳时二刻 · 万物生发'}],
-  渊:[{t:'深渊是最诚实的镜子。它不赞美你，不贬低你，只让你看见自己本来的模样。',s:'戌时三刻 · 夜色渐浓'},{t:'凝视深渊是危险的——但闭着眼睛走路更危险。',s:'寅时初刻 · 黎明将至'}],
-  生:[{t:'生长不是加法，是乘法。每一个决策都在复利。',s:'辰时初刻 · 晨光熹微'},{t:'生命最精妙的算法不是"更多"，而是"恰好"。',s:'未时三刻 · 蝉鸣渐息'}]
+  迷途:[{a:'迷途是棋局的一部分。真正的大师永远不会走丢——他们只是在计算下一手的位置。',b:'卯时初刻 · 晨露未晞'},{a:'方向比速度重要。站在原地看星图，胜过蒙头狂奔三百里。',b:'子时正刻 · 星河在天'}],
+  坎:[{a:'障碍是自然生成的过滤器。跨不过去的，原本就不属于你的路径。',b:'辰时三刻 · 云开雾散'},{a:'把坎当成台阶。踩上去，你的视野就会高于原来的平面。',b:'申时二刻 · 日影西斜'}],
+  执:[{a:'执着是一柄双刃剑。用它开路可以，但别让它成为你唯一握住的武器。',b:'午时初刻 · 烈日当空'},{a:'放手不是因为放弃了目标，而是找到了更优的策略。',b:'丑时初刻 · 万籁俱寂'}],
+  散:[{a:'分散是集中前的蓄力。拉弓越满，箭越快。',b:'酉时初刻 · 暮色初临'},{a:'你以为在散落，其实在布局。有些棋要到终局才看得懂。',b:'巳时二刻 · 万物生发'}],
+  渊:[{a:'深渊是最诚实的镜子。它不赞美你，不贬低你，只让你看见自己本来的模样。',b:'戌时三刻 · 夜色渐浓'},{a:'凝视深渊是危险的——但闭着眼睛走路更危险。',b:'寅时初刻 · 黎明将至'}],
+  生:[{a:'生长不是加法，是乘法。每一个决策都在复利。',b:'辰时初刻 · 晨光熹微'},{a:'生命最精妙的算法不是"更多"，而是"恰好"。',b:'未时三刻 · 蝉鸣渐息'}]
 },INFJ:{
-  迷途:[{t:'迷路的人往往在找别人。其实路一直在你心里，只是你还不敢走。',s:'卯时三刻 · 晨露未晞'},{t:'别怕走错。每一条路走到尽头，你都会发现自己。',s:'亥时初刻 · 月满西楼'}],
-  坎:[{t:'河水从不停下来问"为什么有石头"。它绕过，继续流淌，石头自然圆润。',s:'辰时初刻 · 云开见日'},{t:'每一道坎都是别人的故事在你生命里的回声。听完，就可以翻篇了。',s:'申时三刻 · 日影西斜'}],
-  执:[{t:'你执着的是那个人，还是被那个人看见的自己？',s:'午时二刻 · 烈日当空'},{t:'松开吧。掌心的温度比握住的沙更真实。',s:'子时初刻 · 夜深人静'}],
-  散:[{t:'散落不是破碎。是你把光分给了太多的角落，忘了留一盏给自己。',s:'酉时三刻 · 归鸟入林'},{t:'散开的花瓣会变成泥土，泥土会长出新的花。没有什么是真的失去。',s:'巳时初刻 · 万物生发'}],
-  渊:[{t:'你害怕的不是深渊，是站在深渊边时心里那个回音——它说的都是实话。',s:'丑时三刻 · 万籁俱寂'},{t:'深渊从不会主动拉人下去。是人在渊边站得太久，忘记身后还有路。',s:'戌时二刻 · 夜色渐浓'}],
-  生:[{t:'你生来不是为了照亮所有人。一盏灯点久了也会烫手。先温暖自己。',s:'寅时二刻 · 黎明将至'},{t:'生命最温柔的奇迹不是开花，是愿意在黑暗的泥土里等。',s:'未时二刻 · 蝉鸣如雨'}]
+  迷途:[{a:'迷路的人往往在找别人。其实路一直在你心里，只是你还不敢走。',b:'卯时三刻 · 晨露未晞'},{a:'别怕走错。每一条路走到尽头，你都会发现自己。',b:'亥时初刻 · 月满西楼'}],
+  坎:[{a:'河水从不停下来问"为什么有石头"。它绕过，继续流淌，石头自然圆润。',b:'辰时初刻 · 云开见日'},{a:'每一道坎都是别人的故事在你生命里的回声。听完，就可以翻篇了。',b:'申时三刻 · 日影西斜'}],
+  执:[{a:'你执着的是那个人，还是被那个人看见的自己？',b:'午时二刻 · 烈日当空'},{a:'松开吧。掌心的温度比握住的沙更真实。',b:'子时初刻 · 夜深人静'}],
+  散:[{a:'散落不是破碎。是你把光分给了太多的角落，忘了留一盏给自己。',b:'酉时三刻 · 归鸟入林'},{a:'散开的花瓣会变成泥土，泥土会长出新的花。没有什么是真的失去。',b:'巳时初刻 · 万物生发'}],
+  渊:[{a:'你害怕的不是深渊，是站在深渊边时心里那个回音——它说的都是实话。',b:'丑时三刻 · 万籁俱寂'},{a:'深渊从不会主动拉人下去。是人在渊边站得太久，忘记身后还有路。',b:'戌时二刻 · 夜色渐浓'}],
+  生:[{a:'你生来不是为了照亮所有人。一盏灯点久了也会烫手。先温暖自己。',b:'寅时二刻 · 黎明将至'},{a:'生命最温柔的奇迹不是开花，是愿意在黑暗的泥土里等。',b:'未时二刻 · 蝉鸣如雨'}]
 },ENFP:{
-  迷途:[{t:'迷路了？太好了！未知是冒险的另一个名字。',s:'卯时二刻 · 晨露未晞'},{t:'没有地图的路才是你的路。别人走过的，只是风景。',s:'亥时二刻 · 月色如水'}],
-  坎:[{t:'坎是惊喜的门槛——跨过去之前你永远不知道另一边有什么。',s:'辰时初刻 · 云开见日'},{t:'石头挡路？踩上去，看得更远。',s:'申时初刻 · 日影西斜'}],
-  执:[{t:'你执着的是热情本身。但当风变了方向，帆也要调整。',s:'午时三刻 · 烈日当空'},{t:'放下一个执念，才能拿起一百个新的可能。',s:'子时二刻 · 夜深人静'}],
-  散:[{t:'你是烟花——散开的每一点都是光。不需要收拢成一个形状。',s:'酉时初刻 · 暮色初临'},{t:'散落不是迷失，是播种。你走过的每一处都会开花。',s:'巳时三刻 · 万物生发'}],
-  渊:[{t:'深渊只是很深很深的天空。换个角度看，你在飞翔。',s:'丑时初刻 · 万籁俱寂'},{t:'别在渊边发呆——扔一颗石头下去，听听回声有多深。那才是你。',s:'戌时初刻 · 暮色四合'}],
-  生:[{t:'活着就是不断燃烧。烧完了？没关系，太阳明天还会升起。',s:'寅时初刻 · 黎明将至'},{t:'生命不是填空题，是涂鸦——想画什么就画什么。',s:'未时初刻 · 蝉鸣初起'}]
+  迷途:[{a:'迷路了？太好了！未知是冒险的另一个名字。',b:'卯时二刻 · 晨露未晞'},{a:'没有地图的路才是你的路。别人走过的，只是风景。',b:'亥时二刻 · 月色如水'}],
+  坎:[{a:'坎是惊喜的门槛——跨过去之前你永远不知道另一边有什么。',b:'辰时初刻 · 云开见日'},{a:'石头挡路？踩上去，看得更远。',b:'申时初刻 · 日影西斜'}],
+  执:[{a:'你执着的是热情本身。但当风变了方向，帆也要调整。',b:'午时三刻 · 烈日当空'},{a:'放下一个执念，才能拿起一百个新的可能。',b:'子时二刻 · 夜深人静'}],
+  散:[{a:'你是烟花——散开的每一点都是光。不需要收拢成一个形状。',b:'酉时初刻 · 暮色初临'},{a:'散落不是迷失，是播种。你走过的每一处都会开花。',b:'巳时三刻 · 万物生发'}],
+  渊:[{a:'深渊只是很深很深的天空。换个角度看，你在飞翔。',b:'丑时初刻 · 万籁俱寂'},{a:'别在渊边发呆——扔一颗石头下去，听听回声有多深。那才是你。',b:'戌时初刻 · 暮色四合'}],
+  生:[{a:'活着就是不断燃烧。烧完了？没关系，太阳明天还会升起。',b:'寅时初刻 · 黎明将至'},{a:'生命不是填空题，是涂鸦——想画什么就画什么。',b:'未时初刻 · 蝉鸣初起'}]
 }};
-let sHist={};
-function getReading(m,d){
-  var td=TOKEN_DATA[m];if(!td)return null;
-  var e=td[d];if(!e||!e.length)return null;
-  var k=m+'_'+d;if(!sHist[k])sHist[k]=[];
-  var sh=sHist[k],av=e.filter(function(_,i){return sh.indexOf(i)===-1});
-  if(!av.length){sHist[k]=[];av=e.slice()}
+var H={};
+function gR(m,tk){
+  var td=D[m];if(!td)return null;
+  var e=td[tk];if(!e||!e.length)return null;
+  var k=m+'_'+tk;if(!H[k])H[k]=[];
+  var s=H[k],av=e.filter(function(_,i){return s.indexOf(i)===-1});
+  if(!av.length){H[k]=[];av=e.slice()}
   var p=av[Math.floor(Math.random()*av.length)];
-  sh.push(e.indexOf(p));return p;
+  s.push(e.indexOf(p));return p;
 }
 
-/* ── 模块 3：Canvas 暖色星图 ── */
-(function(){
-  var c=document.getElementById('starfield'),x=c.getContext('2d'),W,H,cx,cy;
-  function rs(){W=c.width=innerWidth;H=c.height=innerHeight;cx=W/2;cy=H/2}
-  rs();addEventListener('resize',rs);
-  function sc(b){return W<=480?Math.ceil(b*.2):W<=768?Math.ceil(b*.35):b}
-  var ld=[
-    {b:380,s:.015,r:350,cl:[195,185,170],a:.18},
-    {b:180,s:.025,r:450,cl:[200,190,175],a:.26},
-    {b:90,s:.038,r:550,cl:[205,195,180],a:.34},
-    {b:30,s:.050,r:650,cl:[215,205,190],a:.22}
-  ];
-  var stars=[];
-  ld.forEach(function(l){
-    for(var i=0,n=sc(l.b);i<n;i++)
-      stars.push({ang:Math.random()*Math.PI*2,d:100+Math.random()*(l.r-100),sp:l.s*(.6+Math.random()*.8),sz:.6+Math.random()*1.8,cl:l.cl,al:l.a*(.5+Math.random())});
-  });
-  function draw(t){
+/* ═══ Canvas星图 ═══ */
+!function(){
+  var cv=document.getElementById('c'),x=cv.getContext('2d'),W,H,cx,cy;
+  function R(){W=cv.width=innerWidth;H=cv.height=innerHeight;cx=W/2;cy=H/2}
+  R();addEventListener('resize',R);
+  function S(b){return W<=480?Math.ceil(b*.2):W<=768?Math.ceil(b*.35):b}
+  var L=[{n:380,v:.015,r:350,c:[195,185,170],a:.18},{n:180,v:.025,r:450,c:[200,190,175],a:.26},{n:90,v:.038,r:550,c:[205,195,180],a:.34},{n:30,v:.050,r:650,c:[215,205,190],a:.22}];
+  var st=[];
+  L.forEach(function(l){for(var i=0,N=S(l.n);i<N;i++)st.push({A:Math.random()*Math.PI*2,R:100+Math.random()*(l.r-100),V:l.v*(.6+Math.random()*.8),Z:.6+Math.random()*1.8,C:l.c,O:l.a*(.5+Math.random())})});
+  function dr(t){
     x.fillStyle='#0D0D14';x.fillRect(0,0,W,H);
-    /* 暖色星云 */
     var g=x.createRadialGradient(cx*.5,cy*.65,0,cx*.5,cy*.65,W*.45);
     g.addColorStop(0,'rgba(60,35,20,.06)');g.addColorStop(1,'rgba(60,35,20,0)');
     x.fillStyle=g;x.fillRect(0,0,W,H);
-    /* 星点 */
-    stars.forEach(function(s){
-      s.ang+=s.sp*.001;
-      var sx=cx+Math.cos(s.ang)*s.d,sy=cy+Math.sin(s.ang)*s.d;
-      if(sx<-50||sx>W+50||sy<-50||sy>H+50)return;
-      x.fillStyle='rgba('+s.cl[0]+','+s.cl[1]+','+s.cl[2]+','+s.al.toFixed(2)+')';
-      x.beginPath();x.arc(sx,sy,s.sz,0,Math.PI*2);x.fill();
-    });
-    /* 小屏跳过高亮星闪烁 */
-    if(W<=768){requestAnimationFrame(draw);return}
-    /* 亮星 */
-    for(var i=0;i<6;i++){
-      var pulse=.5+.5*Math.sin(t*.001*(2*Math.PI/(2.5+Math.random()*3))+Math.random()*Math.PI*2);
-      x.fillStyle='rgba(220,210,195,'+(.5*pulse).toFixed(2)+')';
-      x.beginPath();x.arc(Math.random()*W,Math.random()*H,1.5+Math.random()*2,0,Math.PI*2);
-      x.fill();
-    }
-    requestAnimationFrame(draw);
+    st.forEach(function(s){s.A+=s.V*.001;var sx=cx+Math.cos(s.A)*s.R,sy=cy+Math.sin(s.A)*s.R;if(sx<-50||sx>W+50||sy<-50||sy>H+50)return;x.fillStyle='rgba('+s.C[0]+','+s.C[1]+','+s.C[2]+','+s.O.toFixed(2)+')';x.beginPath();x.arc(sx,sy,s.Z,0,Math.PI*2);x.fill()});
+    if(W>768)for(var i=0;i<5;i++){var p=.5+.5*Math.sin(t*.001*(2*Math.PI/(2.5+Math.random()*3))+Math.random()*Math.PI*2);x.fillStyle='rgba(220,210,195,'+(.4*p).toFixed(2)+')';x.beginPath();x.arc(Math.random()*W,Math.random()*H,1.5+Math.random()*2,0,Math.PI*2);x.fill()}
+    requestAnimationFrame(dr)
   }
-  requestAnimationFrame(draw);
-})();
+  requestAnimationFrame(dr)
+}();
 
-/* ── 模块 4：渲染 ── */
-function renderTokens(){
-  var ct=document.getElementById('tokens-container'),durs=[3.2,3.6,3.0,3.8,3.3,3.5],dels=[0,.5,1,1.5,.3,.8];
-  TOKENS.forEach(function(n,i){
-    var t=document.createElement('div');t.className='token';t.setAttribute('data-token',n);t.textContent=n;
-    t.style.setProperty('--fd',durs[i]+'s');t.style.setProperty('--fdel',dels[i]+'s');
-    t.style.setProperty('--fa',((TOKEN_AMP[0]+Math.random()*(TOKEN_AMP[1]-TOKEN_AMP[0]))|0)+'px');
-    ct.appendChild(t);
-  });
-}
-/* 环形面板 */
-var rp=null,rv=false;
-function buildRing(){
-  if(rp)return;rp=document.createElement('div');rp.className='ring-panel';rp.id='ring-panel';
-  var bd=document.createElement('div');bd.className='ring-backdrop';
-  bd.addEventListener('click',hideRing);rp.appendChild(bd);document.body.appendChild(rp);
-}
-function showRing(){
-  if(!rp)buildRing();
-  var cs=document.getElementById('compass').getBoundingClientRect();
-  var cx=cs.left+cs.width/2,cy=cs.top+cs.height/2,R=cs.width*.58;
-  rp.querySelectorAll('.ring-option').forEach(function(o){o.remove()});
-  MBTI_TYPES.forEach(function(tp,i){
-    var a=(i/MBTI_TYPES.length)*2*Math.PI-Math.PI/2;
-    var o=document.createElement('div');o.className='ring-option';
-    o.textContent=tp+' · '+(TYPE_TAGS[tp]||'');o.setAttribute('data-mbti',tp);
-    o.style.left=(cx+R*Math.cos(a))+'px';o.style.top=(cy+R*Math.sin(a))+'px';
-    o.style.setProperty('--rd',(i*.03)+'s');
-    if(tp===MBTI_TYPES[cur])o.classList.add('ring-option--active');
-    o.addEventListener('click',function(e){e.stopPropagation();cur=MBTI_TYPES.indexOf(this.getAttribute('data-mbti'));upd();hideRing()});
-    rp.appendChild(o);
-  });
-  rp.classList.add('ring-panel--visible');rv=true;
-}
-function hideRing(){if(!rp)return;rp.classList.remove('ring-panel--visible');rv=false}
-
-/* 卡片 */
-function mkCard(m,d,r){
-  var old=document.querySelector('.reading-card');if(old)old.remove();
-  var card=document.createElement('div');card.className='reading-card';card.id='reading-card';
-  var tg=document.createElement('div');tg.className='card-tag';tg.textContent=m+' · '+(TYPE_TAGS[m]||'');
-  var tm=document.createElement('div');tm.className='card-time';
-  var tx=document.createElement('div');tx.className='card-text';
-  var ht=document.createElement('div');ht.className='card-hint';ht.textContent='道法自然，不必执着 · 点击空白处返回';
-  card.appendChild(tg);card.appendChild(tm);card.appendChild(tx);card.appendChild(ht);
-  document.body.appendChild(card);
-  return{card:card,timeEl:tm,textEl:tx,hintEl:ht};
-}
-/* 打字机 */
-function tw(el,txt,sp){
-  return new Promise(function(rs){
-    el.textContent='';var i=0;
-    function tk(){if(i>=txt.length){rs();return}el.textContent+=txt[i];i++;setTimeout(tk,sp)}
-    tk();
-  });
-}
-/* 粒子 */
-function burst(cx,cy){
-  for(var i=0;i<PCNT;i++){
-    var p=document.createElement('div');p.className='particle';p.style.left=cx+'px';p.style.top=cy+'px';
-    var a=Math.random()*2*Math.PI,d=50+Math.random()*120;
-    p.style.setProperty('--px',(Math.cos(a)*d).toFixed(1)+'px');
-    p.style.setProperty('--py',(Math.sin(a)*d).toFixed(1)+'px');
-    document.body.appendChild(p);
-  }
-  setTimeout(function(){document.querySelectorAll('.particle').forEach(function(p){p.remove()})},800);
-}
-
-/* ── 模块 5：状态机 ── */
-var cur=0,anim=false,cardV=false,sTok='',sMbti='';
-function upd(){
-  var d=document.getElementById('mbti-display');if(!d)return;
-  d.textContent=MBTI_TYPES[cur];d.classList.add('flash');
-  setTimeout(function(){d.classList.remove('flash')},150);
-}
-function resetTk(){
-  anim=false;
-  document.querySelectorAll('.token').forEach(function(t){
-    t.classList.remove('token--selected','token--dimmed');t.style.transform='';t.style.opacity='';t.style.transition='';
-  });
-}
-async function showCard(){
-  if(cardV)return;cardV=true;
-  var r=getReading(sMbti,sTok);if(!r){cardV=false;resetTk();return}
-  var els=mkCard(sMbti,sTok,r);
-  var sel=document.querySelector('.token--selected');
-  if(sel){sel.style.transition='opacity .4s';sel.style.opacity='0'}
-  els.card.classList.add('reading-card--visible');
-  if(r.s)await tw(els.timeEl,r.s,TW_SPEED);
-  await tw(els.textEl,r.t,TW_SPEED);
-  els.hintEl.classList.add('card-hint--visible');
-}
-function guiZhen(){
-  if(!cardV)return;cardV=false;
-  var c=document.getElementById('reading-card');
-  if(c){c.classList.remove('reading-card--visible');setTimeout(function(){if(c.parentNode)c.remove()},500)}
-  resetTk();sHist={};
-}
-
-/* ── 事件绑定 + 入口 ── */
-renderTokens();
-document.getElementById('arrow-left').addEventListener('click',function(){if(cardV)return;cur=(cur-1+MBTI_TYPES.length)%MBTI_TYPES.length;upd()});
-document.getElementById('arrow-right').addEventListener('click',function(){if(cardV)return;cur=(cur+1)%MBTI_TYPES.length;upd()});
-document.addEventListener('keydown',function(e){if(cardV)return;if(e.key==='ArrowLeft'){cur=(cur-1+MBTI_TYPES.length)%MBTI_TYPES.length;upd()}if(e.key==='ArrowRight'){cur=(cur+1)%MBTI_TYPES.length;upd()}});
-document.getElementById('compass').addEventListener('click',function(e){if(cardV||anim)return;e.stopPropagation();rv?hideRing():showRing()});
-document.getElementById('tokens-container').addEventListener('click',function(e){
-  var tk=e.target.closest('.token');if(!tk||anim||tk.classList.contains('token--selected'))return;
-  anim=true;
-  var r=tk.getBoundingClientRect(),pcx=r.left+r.width/2,pcy=r.top+r.height/2;burst(pcx,pcy);
-  var dx=innerWidth/2-pcx,dy=innerHeight/2-pcy;
-  tk.style.transform='translate('+dx.toFixed(1)+'px,'+dy.toFixed(1)+'px) scale(1.8)';tk.classList.add('token--selected');
-  var nm=tk.getAttribute('data-token');
-  document.querySelectorAll('.token:not([data-token="'+nm+'"])').forEach(function(t){t.classList.add('token--dimmed')});
-  sTok=nm;sMbti=MBTI_TYPES[cur];
-  setTimeout(function(){anim=false;showCard()},800);
+/* ═══ 渲染 ═══ */
+var tkC=document.getElementById('tc');
+var ds=[3.2,3.6,3,3.8,3.3,3.5],dl=[0,.5,1,1.5,.3,.8];
+T.forEach(function(n,i){
+  var e=document.createElement('div');e.className='tk';e.setAttribute('data-tk',n);e.textContent=n;
+  e.style.setProperty('--fd',ds[i]+'s');e.style.setProperty('--fdel',dl[i]+'s');
+  e.style.setProperty('--fa',((TA[0]+Math.random()*(TA[1]-TA[0]))|0)+'px');
+  tkC.appendChild(e)
 });
-document.addEventListener('click',function(e){if(!cardV)return;var c=document.getElementById('reading-card');if(c&&!c.contains(e.target))guiZhen()});
-upd();
+
+/* 环形面板 */
+var RP=null,rv=false;
+function bR(){if(RP)return;RP=document.createElement('div');RP.className='rp';var b=document.createElement('div');b.className='rp-bd';b.addEventListener('click',hR);RP.appendChild(b);document.body.appendChild(RP)}
+function sR(){
+  bR();var r=document.getElementById('co').getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,R=r.width*.58;
+  RP.querySelectorAll('.rp-o').forEach(function(o){o.remove()});
+  C.forEach(function(t,i){var a=(i/C.length)*2*Math.PI-Math.PI/2,o=document.createElement('div');o.className='rp-o';o.textContent=t+' · '+(TAGS[t]||'');o.setAttribute('data-m',t);o.style.left=(cx+R*Math.cos(a))+'px';o.style.top=(cy+R*Math.sin(a))+'px';o.style.setProperty('--rd',(i*.03)+'s');if(t===C[ci])o.classList.add('rp-o--a');o.addEventListener('click',function(e){e.stopPropagation();ci=C.indexOf(this.getAttribute('data-m'));U();hR()});RP.appendChild(o)});
+  RP.classList.add('rp--v');rv=true
+}
+function hR(){RP.classList.remove('rp--v');rv=false}
+
+/* 打字机 */
+function TW(el,t,s){return new Promise(function(rs){el.textContent='';var i=0;function k(){if(i>=t.length){rs();return}el.textContent+=t[i];i++;setTimeout(k,s)}k()})}
+/* 粒子 */
+function BR(cx,cy){for(var i=0;i<PN;i++){var p=document.createElement('div');p.className='prt';p.style.left=cx+'px';p.style.top=cy+'px';var a=Math.random()*2*Math.PI,d=50+Math.random()*120;p.style.setProperty('--px',(Math.cos(a)*d).toFixed(1)+'px');p.style.setProperty('--py',(Math.sin(a)*d).toFixed(1)+'px');document.body.appendChild(p)}setTimeout(function(){document.querySelectorAll('.prt').forEach(function(p){p.remove()})},800)}
+
+/* ═══ 状态机 ═══ */
+var ci=0,an=false,cd=false,sT='',sM='';
+function U(){var d=document.getElementById('cc');d.textContent=C[ci];d.classList.add('f');setTimeout(function(){d.classList.remove('f')},150)}
+function RT(){an=false;document.querySelectorAll('.tk').forEach(function(t){t.classList.remove('tk--s','tk--d');t.style.transform='';t.style.opacity='';t.style.transition=''})}
+async function SC(){
+  if(cd)return;cd=true;var r=gR(sM,sT);if(!r){cd=false;RT();return}
+  var old=document.querySelector('.rd');if(old)old.remove();
+  var card=document.createElement('div');card.className='rd';
+  var tg=document.createElement('div');tg.className='rd-tg';tg.textContent=sM+' · '+(TAGS[sM]||'');
+  var tm=document.createElement('div');tm.className='rd-tm';
+  var tx=document.createElement('div');tx.className='rd-tx';
+  var ht=document.createElement('div');ht.className='rd-ht';ht.textContent='道法自然，不必执着 · 点击空白处返回';
+  card.appendChild(tg);card.appendChild(tm);card.appendChild(tx);card.appendChild(ht);document.body.appendChild(card);
+  var sl=document.querySelector('.tk--s');if(sl){sl.style.transition='opacity .4s';sl.style.opacity='0'}
+  card.classList.add('rd--v');
+  if(r.b)await TW(tm,r.b,TW);
+  await TW(tx,r.a,TW);
+  ht.classList.add('rd-ht--v')
+}
+function GZ(){if(!cd)return;cd=false;var c=document.querySelector('.rd');if(c){c.classList.remove('rd--v');setTimeout(function(){if(c.parentNode)c.remove()},500)}RT();H={}}
+
+/* ═══ 事件 ═══ */
+document.getElementById('al').addEventListener('click',function(){if(cd)return;ci=(ci-1+C.length)%C.length;U()});
+document.getElementById('ar').addEventListener('click',function(){if(cd)return;ci=(ci+1)%C.length;U()});
+addEventListener('keydown',function(e){if(cd)return;if(e.key==='ArrowLeft'){ci=(ci-1+C.length)%C.length;U()}if(e.key==='ArrowRight'){ci=(ci+1)%C.length;U()}});
+document.getElementById('co').addEventListener('click',function(e){if(cd||an)return;e.stopPropagation();rv?hR():sR()});
+tkC.addEventListener('click',function(e){
+  var t=e.target.closest('.tk');if(!t||an||t.classList.contains('tk--s'))return;an=true;
+  var r=t.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;BR(cx,cy);
+  t.style.transform='translate('+((innerWidth/2-cx).toFixed(1))+'px,'+((innerHeight/2-cy).toFixed(1))+'px) scale(1.8)';
+  t.classList.add('tk--s');var n=t.getAttribute('data-tk');
+  document.querySelectorAll('.tk:not([data-tk="'+n+'"])').forEach(function(o){o.classList.add('tk--d')});
+  sT=n;sM=C[ci];setTimeout(function(){an=false;SC()},800)
+});
+addEventListener('click',function(e){if(!cd)return;var c=document.querySelector('.rd');if(c&&!c.contains(e.target))GZ()});
+U();
 </script>
 </body>
 </html>
