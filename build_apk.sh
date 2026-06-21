@@ -21,9 +21,11 @@ cat > $TMP/AndroidManifest.xml << 'XML'
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.luoshui.yunzhuan">
+    <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="34" android:compileSdkVersion="36"/>
     <uses-permission android:name="android.permission.INTERNET"/>
     <application android:label="云篆" android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
-        android:hardwareAccelerated="true" android:supportsRtl="true">
+        android:hardwareAccelerated="true" android:supportsRtl="true"
+        android:allowBackup="false" android:extractNativeLibs="false">
         <activity android:name=".MainActivity" android:exported="true"
             android:configChanges="orientation|screenSize|keyboardHidden">
             <intent-filter>
