@@ -536,7 +536,7 @@
 
   /* 选中令牌：飞升中央 */
   .token--selected {
-    animation: none;
+    animation: none !important;
     z-index: 50;
     transition:
       transform 0.8s var(--easing),
@@ -676,6 +676,7 @@
   .token:hover {
     animation-name: yunPaperShiver;
     animation-duration: 0.5s;
+    animation-iteration-count: 1;
     animation-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1);
   }
 
@@ -918,8 +919,8 @@
     }
     .trigram { font-size: 15px; }
 
-    .compass-row { gap: 18px; }
-    .arrow { width: 48px; height: 48px; font-size: 28px; }
+    .compass-row { gap: 24px; }
+    .arrow { width: 56px; height: 56px; font-size: 32px; }
 
     .token {
       width: 64px;
@@ -974,8 +975,8 @@
     }
     .trigram { font-size: 13px; }
 
-    .compass-row { gap: 10px; }
-    .arrow { width: 44px; height: 44px; font-size: 24px; }
+    .compass-row { gap: 20px; }
+    .arrow { width: 52px; height: 52px; font-size: 28px; }
 
     .token {
       width: 52px;
