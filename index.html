@@ -2,1947 +2,679 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-
-<!-- PWA -->
-<link rel="manifest" href="manifest.json">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#0D0D14">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="云篆">
 <title>云篆 · 东方人格探索</title>
-
-<!--
-  ═══════════════════════════════════════════════════════════
-  云篆 YunZhuan — 东方美学人格体验
-  单文件离线 PWA · 双击 index.html 即可运行
-  架构：配置 → 数据 → 渲染 → 动效 → 状态机，各模块解耦
-  ═══════════════════════════════════════════════════════════
--->
-
-<!-- ============================================================
-  模块 1：主题样式体系 <style data-module="theme">
-  变量定义、字体回退、全局重置、动画关键帧
-  按组件顺序：background → compass → tokens → card → utilities
-  视觉铁律：禁用纯白、高饱和现代色，贯穿暗金/朱砂/青铜/竹简
-============================================================ -->
-<style data-module="theme">
-  /* ═══════════════════════════════════════════════════
-     CSS Custom Properties
-     ═══════════════════════════════════════════════════ */
-  :root {
-    --bg-deep: #0D0D14;
-    --gold-dark: #8B7355;
-    --gold: #B8860B;
-    --gold-light: #DAA520;
-    --cinnabar: #C41E3A;
-    --cinnabar-light: #E23D3D;
-    --bronze: #6B3A2A;
-    --bronze-light: #8B5A3C;
-    --bronze-deep: #3E2418;
-    --bamboo: #F0EAD6;
-    --bamboo-dark: #E0D5C0;
-    --ink: #2C1810;
-    --ink-light: #4A3728;
-    --font-title: 'LiSu', '楷体', 'KaiTi', 'STKaiti', serif;
-    --font-body: 'SimSun', '宋体', 'STSong', 'FangSong', '仿宋', serif;
-    --easing: cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  /* ═══════════════════════════════════════════════════
-     全局重置
-     ═══════════════════════════════════════════════════ */
-  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    width: 100vw;
-    height: 100vh;
-    height: 100dvh;
-    overflow: hidden;
-    background: var(--bg-deep);
-    font-family: var(--font-body);
-    color: var(--bamboo);
-    user-select: none;
-    -webkit-user-select: none;
-    cursor: default;
-  }
-
-  /* ═══════════════════════════════════════════════════
-     背景星图 — 极慢天球漂移
-     ═══════════════════════════════════════════════════ */
-  #starfield {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-    overflow: hidden;
-    background:
-      /* 银河辉光 — 对角线星云弥漫 */
-      radial-gradient(ellipse 65% 50% at 28% 35%, rgba(60, 80, 130, 0.12), transparent 55%),
-      radial-gradient(ellipse 55% 45% at 72% 60%, rgba(50, 40, 90, 0.10), transparent 50%),
-      radial-gradient(ellipse 70% 40% at 50% 78%, rgba(35, 45, 70, 0.08), transparent 52%),
-      radial-gradient(ellipse 80% 60% at 45% 50%, rgba(25, 30, 50, 0.06), transparent 65%);
-  }
-
-  /* 紫微星云 — 缓慢呼吸叠加层 */
-  #starfield::after {
-    content: '';
-    position: fixed;
-    inset: 0;
-    z-index: 1;
-    pointer-events: none;
-    background:
-      radial-gradient(ellipse 40% 30% at 30% 25%, rgba(40, 20, 60, 0.08), transparent 60%),
-      radial-gradient(ellipse 35% 35% at 70% 70%, rgba(20, 30, 55, 0.06), transparent 55%);
-    animation: nebulaBreathe 20s ease-in-out infinite;
-  }
-
-  @keyframes nebulaBreathe {
-    0%, 100% { opacity: 0.6; }
-    50%      { opacity: 1; }
-  }
-
-  .star-layer {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    border-radius: 50%;
-    will-change: transform;
-    transform: translateZ(0);
-    backface-visibility: hidden;
-    animation: starDrift var(--speed) linear infinite;
-  }
-
-  .star-layer:nth-child(2) { animation-direction: reverse; }
-  .star-layer:nth-child(3) { animation-direction: reverse; }
-
-  @keyframes starDrift {
-    from { transform: translate(-50%, -50%) rotate(0deg) translateX(var(--drift-x)) translateY(var(--drift-y)); }
-    to   { transform: translate(-50%, -50%) rotate(360deg) translateX(var(--drift-x)) translateY(var(--drift-y)); }
-  }
-
-  /* ═══════════════════════════════════════════════════
-     亮星 — 独立不规则闪烁
-     ═══════════════════════════════════════════════════ */
-  .hero-star {
-    position: fixed;
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 4;
-    animation: heroTwinkle var(--hero-period) var(--hero-delay) ease-in-out infinite;
-  }
-
-  @keyframes heroTwinkle {
-    0%, 100%   { opacity: 1;   transform: scale(1); }
-    15%        { opacity: 0.55; transform: scale(0.75); }
-    30%        { opacity: 0.9;  transform: scale(0.95); }
-    45%        { opacity: 0.35; transform: scale(0.6); }
-    60%        { opacity: 1;    transform: scale(1.08); }
-    75%        { opacity: 0.7;  transform: scale(0.85); }
-    90%        { opacity: 0.95; transform: scale(1.02); }
-  }
-
-  /* ═══════════════════════════════════════════════════
-     流星 — 稀有，长间隔
-     ═══════════════════════════════════════════════════ */
-  .shooting-star {
-    position: fixed;
-    width: 80px;
-    height: 1px;
-    pointer-events: none;
-    z-index: 5;
-    opacity: 0;
-    background: linear-gradient(to right, transparent, rgba(200, 210, 230, 0.3), rgba(220, 230, 245, 0.7));
-    box-shadow: 0 0 2px rgba(200, 210, 230, 0.3);
-    animation: shootingFly var(--shoot-duration) var(--shoot-delay) ease-out infinite;
-  }
-
-  @keyframes shootingFly {
-    0%   { transform: translate(0, 0); opacity: 0; }
-    4%   { opacity: 1; }
-    12%  { opacity: 0; }
-    100% { transform: translate(var(--shoot-dx), var(--shoot-dy)); opacity: 0; }
-  }
-
-  /* ═══════════════════════════════════════════════════
-     主舞台
-     ═══════════════════════════════════════════════════ */
-  #stage {
-    position: fixed;
-    inset: 0;
-    z-index: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 40px;
-  }
-
-  /* ═══════════════════════════════════════════════════
-     罗盘行（箭头 + 罗盘 + 箭头）
-     ═══════════════════════════════════════════════════ */
-  .compass-row {
-    display: flex;
-    align-items: center;
-    gap: 32px;
-  }
-
-  /* ═══════════════════════════════════════════════════
-     罗盘组件 — 青铜自转罗经
-     ═══════════════════════════════════════════════════ */
-  .compass {
-    position: relative;
-    width: 300px;
-    height: 300px;
-    flex-shrink: 0;
-    order: 1;
-    will-change: transform;
-    animation: compassRotate 120s linear infinite;
-    filter: drop-shadow(0 0 40px rgba(107, 58, 42, 0.35))
-            drop-shadow(0 0 80px rgba(139, 90, 60, 0.15));
-  }
-
-  /* 外层光晕 — 独立于自转的缓慢呼吸 */
-  .compass::before {
-    content: '';
-    position: absolute;
-    inset: -30px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(139, 90, 60, 0.08), transparent 70%);
-    pointer-events: none;
-    animation: compassGlow 6s ease-in-out infinite;
-  }
-
-  .compass-ring {
-    position: absolute;
-    border-radius: 50%;
-    top: 50%;
-    left: 50%;
-    pointer-events: none;
-    will-change: transform;
-    transform: translateZ(0);
-  }
-
-  /* 外环 — 青铜刻度环，反向慢转 */
-  .compass-ring--outer {
-    width: 300px;
-    height: 300px;
-    margin: -150px 0 0 -150px;
-    border: 2.5px solid var(--bronze);
-    box-shadow:
-      0 0 24px rgba(107, 58, 42, 0.20),
-      inset 0 0 40px rgba(107, 58, 42, 0.10),
-      0 0 60px rgba(62, 36, 24, 0.30);
-    animation: ringRotateOuter 90s linear infinite;
-  }
-
-  /* 中环 — 蚀刻铜线，同向略快 */
-  .compass-ring--mid {
-    width: 260px;
-    height: 260px;
-    margin: -130px 0 0 -130px;
-    border: 1px dashed rgba(139, 90, 60, 0.55);
-    opacity: 0.6;
-    animation: ringRotateMid 70s linear infinite;
-  }
-
-  /* 内环 — 暗铜细线，反向 */
-  .compass-ring--inner {
-    width: 220px;
-    height: 220px;
-    margin: -110px 0 0 -110px;
-    border: 1px solid rgba(107, 58, 42, 0.5);
-    opacity: 0.5;
-    animation: ringRotateInner 110s linear infinite;
-  }
-
-  /* 中心文字圆 — 天池，反向自转抵消罗盘旋转，始终正立 */
-  .compass-center {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 170px;
-    height: 170px;
-    margin: -85px 0 0 -85px;
-    border-radius: 50%;
-    background: radial-gradient(circle at 45% 40%, #1a1520, #0D0D14 70%);
-    border: 1.5px solid rgba(107, 58, 42, 0.4);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: var(--font-title);
-    font-size: 48px;
-    color: var(--bronze-light);
-    letter-spacing: 6px;
-    text-shadow:
-      0 0 16px rgba(139, 90, 60, 0.4),
-      0 0 40px rgba(139, 90, 60, 0.15);
-    transition: color 0.15s ease, text-shadow 0.15s ease;
-    z-index: 2;
-    overflow: hidden;
-    animation: compassCenterCounter 120s linear infinite;
-  }
-
-  /* 十字准线 */
-  .compass-center::before,
-  .compass-center::after {
-    content: '';
-    position: absolute;
-    background: var(--bronze);
-    opacity: 0.15;
-  }
-
-  .compass-center::before {
-    width: 1px;
-    height: 60%;
-  }
-
-  .compass-center::after {
-    width: 60%;
-    height: 1px;
-  }
-
-  /* 文字切换动画 */
-  .compass-center.text-switching {
-    color: var(--bronze-light);
-    text-shadow:
-      0 0 24px rgba(139, 90, 60, 0.65),
-      0 0 48px rgba(139, 90, 60, 0.25);
-  }
-
-  /* ═══════════════════════════════════════════════════
-     八卦爻符 — 固定在环上随罗盘旋转
-     ═══════════════════════════════════════════════════ */
-  .trigram {
-    position: absolute;
-    top: calc(50% + var(--ty));
-    left: calc(50% + var(--tx));
-    transform: translate(-50%, -50%);
-    font-family: var(--font-title);
-    font-size: 18px;
-    color: rgba(139, 90, 60, 0.6);
-    pointer-events: none;
-    text-shadow: 0 0 10px rgba(107, 58, 42, 0.25);
-  }
-
-  /* ═══════════════════════════════════════════════════
-     罗盘旋转关键帧
-     ═══════════════════════════════════════════════════ */
-  @keyframes compassRotate {
-    from { transform: rotate(0deg); }
-    to   { transform: rotate(360deg); }
-  }
-
-  @keyframes compassCenterCounter {
-    from { transform: rotate(0deg); }
-    to   { transform: rotate(-360deg); }
-  }
-
-  @keyframes ringRotateOuter {
-    from { transform: rotate(0deg); }
-    to   { transform: rotate(-360deg); }
-  }
-
-  @keyframes ringRotateMid {
-    from { transform: rotate(0deg); }
-    to   { transform: rotate(360deg); }
-  }
-
-  @keyframes ringRotateInner {
-    from { transform: rotate(0deg); }
-    to   { transform: rotate(-360deg); }
-  }
-
-  @keyframes compassGlow {
-    0%, 100% { opacity: 0.6; }
-    50%      { opacity: 1; }
-  }
-
-  /* ═══════════════════════════════════════════════════
-     青铜箭头 — 纹样风格
-     ═══════════════════════════════════════════════════ */
-  .arrow {
-    width: 44px;
-    height: 44px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: var(--font-title);
-    font-size: 24px;
-    color: var(--bronze);
-    flex-shrink: 0;
-    text-shadow: 0 0 8px rgba(107, 58, 42, 0.3);
-    transition: color 0.3s var(--easing), text-shadow 0.3s var(--easing), opacity 0.2s var(--easing);
-    user-select: none;
-    -webkit-user-select: none;
-  }
-
-  .arrow:hover {
-    color: var(--bronze-light);
-    text-shadow: 0 0 16px rgba(139, 90, 60, 0.6), 0 0 32px rgba(139, 90, 60, 0.25);
-  }
-
-  .arrow:active {
-    opacity: 0.6;
-  }
-
-  .arrow--left  { order: 0; }
-  .arrow--right { order: 2; }
-
-  /* ═══════════════════════════════════════════════════
-     环形 16 型全览面板
-     圆心固定在罗盘中央，半径 58% 罗盘宽，16 选项均匀分布
-     ═══════════════════════════════════════════════════ */
-  .ring-panel {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100vw; height: 100vh;
-    z-index: 80;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .ring-panel--visible {
-    opacity: 1;
-    pointer-events: auto;
-  }
-  .ring-backdrop {
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-  }
-  .ring-option {
-    position: absolute;
-    transform: translate(-50%, -50%);
-    font-family: var(--font-title);
-    font-size: 16px;
-    color: var(--bronze);
-    letter-spacing: 3px;
-    cursor: pointer;
-    pointer-events: auto;
-    opacity: 0;
-    text-shadow: 0 0 10px rgba(107, 58, 42, 0.3);
-    transition:
-      color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-      text-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-      font-size 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-    white-space: nowrap;
-  }
-  .ring-option:hover {
-    color: var(--cinnabar);
-    text-shadow:
-      0 0 24px rgba(196, 30, 58, 0.6),
-      0 0 48px rgba(196, 30, 58, 0.25);
-    font-size: 22px;
-    z-index: 2;
-  }
-  .ring-option--active {
-    color: var(--cinnabar-light);
-    text-shadow:
-      0 0 18px rgba(226, 61, 61, 0.5),
-      0 0 36px rgba(196, 30, 58, 0.2);
-  }
-  .ring-panel--visible .ring-option {
-    animation: ringOptionAppear 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) var(--ring-delay) forwards;
-  }
-  @keyframes ringOptionAppear {
-    from { opacity: 0; transform: translate(-50%, -50%) scale(0.3); filter: blur(4px); }
-    60%  { opacity: 1; filter: blur(0); }
-    to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-  }
-  @media (max-width: 768px) {
-    .ring-option { font-size: 14px; letter-spacing: 2px; }
-    .ring-option:hover { font-size: 19px; }
-  }
-  @media (max-width: 480px) {
-    .ring-option { font-size: 12px; letter-spacing: 1px; }
-    .ring-option:hover { font-size: 16px; }
-  }
-
-  /* ═══════════════════════════════════════════════════
-     心笺组
-     ═══════════════════════════════════════════════════ */
-  #tokens-container {
-    display: flex;
-    gap: 24px;
-    justify-content: center;
-    align-items: center;
-  }
-
-  .token {
-    width: 80px;
-    height: 180px;
-    /* 黄笺纸基底 — 自然老化肌理 */
-    background-color: #C8B896;
-    background-image:
-      /* 四角不规则暗沉 */
-      radial-gradient(ellipse at 0% 0%, rgba(70, 50, 20, 0.18), transparent 35%),
-      radial-gradient(ellipse at 100% 0%, rgba(70, 50, 20, 0.14), transparent 30%),
-      radial-gradient(ellipse at 0% 100%, rgba(70, 50, 20, 0.12), transparent 32%),
-      radial-gradient(ellipse at 100% 100%, rgba(70, 50, 20, 0.16), transparent 28%),
-      /* 纸纤维细纹 */
-      repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 4px,
-        rgba(100, 80, 50, 0.025) 4px,
-        rgba(100, 80, 50, 0.025) 5px
-      );
-    border: 1px solid rgba(70, 50, 20, 0.25);
-    box-shadow:
-      0 3px 16px rgba(0, 0, 0, 0.45),
-      0 1px 4px rgba(0, 0, 0, 0.3),
-      inset 0 0 50px rgba(70, 50, 20, 0.06);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    writing-mode: vertical-rl;
-    font-family: 'KaiTi', '楷体', 'STKaiti', 'SimSun', serif;
-    font-size: 40px;
-    font-weight: bold;
-    color: #3C1010;
-    letter-spacing: 6px;
-    cursor: pointer;
-    animation: tokenFloat var(--float-duration) ease-in-out infinite;
-    animation-delay: var(--float-delay);
-    transition:
-      transform 0.35s var(--easing),
-      opacity 0.35s var(--easing),
-      box-shadow 0.35s var(--easing),
-      color 0.35s var(--easing),
-      text-shadow 0.35s var(--easing),
-      border-color 0.35s var(--easing);
-    text-shadow:
-      0 0 3px rgba(60, 16, 16, 0.55),
-      0 0 10px rgba(60, 16, 16, 0.25),
-      0 0 20px rgba(60, 16, 16, 0.10),
-      0 0 36px rgba(60, 16, 16, 0.04);
-  }
-
-  .token:hover {
-    color: var(--cinnabar);
-    text-shadow:
-      0 0 14px rgba(196, 30, 58, 0.55),
-      0 0 32px rgba(196, 30, 58, 0.25);
-    box-shadow:
-      0 6px 24px rgba(196, 30, 58, 0.18),
-      0 2px 8px rgba(0, 0, 0, 0.5),
-      inset 0 0 60px rgba(196, 30, 58, 0.04);
-    border-color: rgba(196, 30, 58, 0.35);
-  }
-
-  /* 选中令牌：飞升中央 */
-  .token--selected {
-    animation: none !important;
-    z-index: 50;
-    transition:
-      transform 0.8s var(--easing),
-      opacity 0.8s var(--easing),
-      box-shadow 0.35s var(--easing),
-      color 0.35s var(--easing),
-      text-shadow 0.35s var(--easing),
-      border-color 0.35s var(--easing);
-    color: var(--cinnabar);
-    text-shadow:
-      0 0 14px rgba(196, 30, 58, 0.55),
-      0 0 32px rgba(196, 30, 58, 0.25);
-    box-shadow:
-      0 6px 24px rgba(196, 30, 58, 0.18),
-      0 2px 8px rgba(0, 0, 0, 0.5),
-      inset 0 0 60px rgba(196, 30, 58, 0.04);
-    border-color: rgba(196, 30, 58, 0.35);
-  }
-
-  /* 非选中令牌：淡出 */
-  .token--dimmed {
-    animation: none;
-    opacity: 0;
-    transition: opacity 0.8s var(--easing);
-    pointer-events: none;
-  }
-
-  @keyframes tokenFloat {
-    0%, 100% { transform: translateY(0); }
-    50%      { transform: translateY(calc(-1 * var(--float-amp))); }
-  }
-
-  /* ═══════════════════════════════════════════════════
-     解读卡片（预留，Step 4 实现）
-     ═══════════════════════════════════════════════════ */
-
-  /* ═══════════════════════════════════════════════════
-     粒子层 — 金色光点爆发
-     ═══════════════════════════════════════════════════ */
-  .particle {
-    position: fixed;
-    width: 8px;
-    height: 8px;
-    background: var(--gold-light);
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 100;
-    box-shadow:
-      0 0 6px var(--gold-light),
-      0 0 18px rgba(218, 165, 32, 0.5);
-    animation: particleBurst 0.8s var(--easing) forwards;
-  }
-
-  /* ═══════════════════════════════════════════════════
-     粒子爆发关键帧
-     ═══════════════════════════════════════════════════ */
-  @keyframes particleBurst {
-    0%   { transform: translate(0, 0) scale(1); opacity: 1; }
-    100% { transform: translate(var(--px), var(--py)) scale(0.2); opacity: 0; }
-  }
-
-  /* ═══════════════════════════════════════════════════
-     水墨动画集（基于 animate.css ⭐82K + Hover ⭐29K + Galaxy ⭐11K）
-     ═══════════════════════════════════════════════════ */
-  @keyframes yunFadeIn {
-    from { opacity: 0; transform: translateY(4px); filter: blur(1px); }
-    to   { opacity: 1; transform: translateY(0); filter: blur(0); }
-  }
-  @keyframes yunInkSpread {
-    from { opacity: 0; transform: scale(0.1); filter: blur(8px); }
-    40%  { opacity: 0.6; filter: blur(3px); }
-    70%  { opacity: 1; transform: scale(1.03); filter: blur(0); }
-    to   { opacity: 1; transform: scale(1); filter: blur(0); }
-  }
-  @keyframes yunBreath {
-    0%, 100% { transform: scale(1); opacity: 0.92; }
-    50%      { transform: scale(1.015); opacity: 1; }
-  }
-  @keyframes yunPaperShiver {
-    0%, 100% { transform: translateY(0); }
-    15%, 45%, 75% { transform: translateY(-2px); }
-    30%, 60%      { transform: translateY(2px); }
-  }
-  @keyframes yunStamp {
-    from { opacity: 0; transform: scale(0.3); }
-    50%  { opacity: 1; transform: scale(1.08); }
-    75%  { transform: scale(0.96); }
-    to   { opacity: 1; transform: scale(1); }
-  }
-  @keyframes yunFloatUp {
-    from { opacity: 0; transform: translateY(30px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes yunSway {
-    20%  { transform: rotate(8deg); }
-    40%  { transform: rotate(-5deg); }
-    60%  { transform: rotate(3deg); }
-    80%  { transform: rotate(-2deg); }
-    100% { transform: rotate(0deg); }
-  }
-  @keyframes yunFadeOut {
-    from { opacity: 1; transform: translateY(0); filter: blur(0); }
-    to   { opacity: 0; transform: translateY(-8px); filter: blur(2px); }
-  }
-
-  /* ═══════════════════════════════════════════════════
-     笺纸纹理（SVG feTurbulence 纤维+颗粒）
-     ═══════════════════════════════════════════════════ */
-  .token-texture {
-    position: relative;
-    isolation: isolate;
-  }
-  .token-texture::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='300'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7 0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.06'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)'/%3E%3C/svg%3E");
-    pointer-events: none;
-    mix-blend-mode: multiply;
-    opacity: 0.7;
-    z-index: 1;
-  }
-  .token-texture::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background:
-      linear-gradient(180deg, rgba(70,50,20,0.08) 0%, transparent 15%, transparent 85%, rgba(70,50,20,0.06) 100%);
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  /* 罗盘青铜呼吸增强 + 心笺悬停微颤 */
-  .compass::before {
-    animation: compassGlow 6s ease-in-out infinite, yunBreath 4s ease-in-out infinite;
-  }
-  .token:hover {
-    animation-name: yunPaperShiver;
-    animation-duration: 0.5s;
-    animation-iteration-count: 1;
-    animation-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1);
-  }
-
-  /* 箭头青铜光泽（基于 Hover ⭐29K 技法） */
-  .arrow {
-    position: relative;
-    overflow: visible;
-  }
-  .arrow::before {
-    content: '';
-    position: absolute;
-    inset: -4px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(139,90,60,0) 0%, rgba(139,90,60,0.12) 50%, transparent 70%);
-    opacity: 0;
-    transition: opacity 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
-    pointer-events: none;
-  }
-  .arrow:hover::before {
-    opacity: 1;
-  }
-
-  /* 卡片浮入 */
-  .reading-card--visible {
-    animation: yunFloatUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-
-  /* ═══════════════════════════════════════════════════
-     观象卡片（Step 4）— 精细竹简纹理 + 编绳绳结 + 打字机正文
-     五层渐变：纤维纹 → 竹片缝 → 高光边 → 编绳带 → 年代晕染
-     ::before/::after 绳结点缀
-     ═══════════════════════════════════════════════════ */
-  .reading-card {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) scale(0.92);
-    width: min(520px, 88vw);
-    max-height: min(420px, 70vh);
-    z-index: 60;
-    background-color: var(--bamboo);
-    background-image:
-      /* 1. 竹纤维竖向纹理 — 极细条纹 */
-      repeating-linear-gradient(
-        90deg,
-        transparent 0px,
-        transparent 2px,
-        rgba(44, 24, 16, 0.025) 2px,
-        rgba(44, 24, 16, 0.025) 3px,
-        transparent 3px,
-        transparent 5px
-      ),
-      /* 2. 竹片间缝隙 — 每22px一道暗色分隔 */
-      repeating-linear-gradient(
-        90deg,
-        transparent 0px,
-        transparent 22px,
-        rgba(44, 24, 16, 0.15) 22px,
-        rgba(44, 24, 16, 0.15) 22.5px
-      ),
-      /* 3. 竹片高光边 — 缝隙旁的微亮弧面 */
-      repeating-linear-gradient(
-        90deg,
-        transparent 0px,
-        transparent 22.5px,
-        rgba(255, 252, 242, 0.3) 22.5px,
-        rgba(255, 252, 242, 0.3) 23.5px
-      ),
-      /* 4. 编绳横带 — 上下两道古绳痕 */
-      linear-gradient(
-        to bottom,
-        transparent 28%,
-        rgba(44, 24, 16, 0.07) 28%,
-        rgba(44, 24, 16, 0.07) 30%,
-        transparent 30%,
-        transparent 68%,
-        rgba(44, 24, 16, 0.07) 68%,
-        rgba(44, 24, 16, 0.07) 70%,
-        transparent 70%
-      ),
-      /* 5. 年代晕染 — 边缘渐深仿古旧竹简 */
-      radial-gradient(
-        ellipse at 50% 50%,
-        transparent 55%,
-        rgba(200, 180, 140, 0.12) 80%,
-        rgba(180, 155, 110, 0.22) 100%
-      );
-    border: 2px solid var(--ink);
-    border-radius: 2px;
-    padding: 32px 36px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    opacity: 0;
-    pointer-events: none;
-    box-shadow:
-      0 8px 40px rgba(0, 0, 0, 0.65),
-      0 0 0 1px rgba(44, 24, 16, 0.2),
-      inset 0 1px 0 rgba(255, 252, 242, 0.1),
-      inset 0 -2px 0 rgba(44, 24, 16, 0.06);
-    transition: opacity 0.5s var(--easing), transform 0.5s var(--easing);
-  }
-
-  .reading-card--visible {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-    pointer-events: auto;
-  }
-
-  /* 编绳绳结 — ::before 上绳 / ::after 下绳 */
-  .reading-card::before,
-  .reading-card::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: 8px;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .reading-card::before {
-    top: 29%;
-    background:
-      radial-gradient(circle at 20px 50%, rgba(44, 24, 16, 0.22) 3px, transparent 3px),
-      radial-gradient(circle at 50% 50%, rgba(44, 24, 16, 0.22) 3px, transparent 3px),
-      radial-gradient(circle at calc(100% - 20px) 50%, rgba(44, 24, 16, 0.22) 3px, transparent 3px),
-      linear-gradient(
-        to bottom,
-        transparent 38%,
-        rgba(44, 24, 16, 0.08) 38%,
-        rgba(44, 24, 16, 0.08) 62%,
-        transparent 62%
-      );
-  }
-
-  .reading-card::after {
-    top: 70%;
-    background:
-      radial-gradient(circle at 20px 50%, rgba(44, 24, 16, 0.22) 3px, transparent 3px),
-      radial-gradient(circle at 50% 50%, rgba(44, 24, 16, 0.22) 3px, transparent 3px),
-      radial-gradient(circle at calc(100% - 20px) 50%, rgba(44, 24, 16, 0.22) 3px, transparent 3px),
-      linear-gradient(
-        to bottom,
-        transparent 38%,
-        rgba(44, 24, 16, 0.08) 38%,
-        rgba(44, 24, 16, 0.08) 62%,
-        transparent 62%
-      );
-  }
-
-  .card-tag {
-    font-family: var(--font-title);
-    font-size: 20px;
-    color: var(--cinnabar);
-    letter-spacing: 4px;
-    text-shadow: 0 0 8px rgba(196, 30, 58, 0.2);
-    border-bottom: 1px solid rgba(44, 24, 16, 0.12);
-    padding-bottom: 12px;
-  }
-
-  .card-time {
-    font-family: var(--font-body);
-    font-size: 15px;
-    color: var(--ink-light);
-    letter-spacing: 2px;
-    min-height: 1.4em;
-  }
-
-  .card-text {
-    font-family: var(--font-body);
-    font-size: 16px;
-    color: var(--ink);
-    line-height: 1.9;
-    letter-spacing: 1px;
-    flex: 1;
-    overflow-y: auto;
-    min-height: 3em;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(44, 24, 16, 0.2) transparent;
-  }
-
-  .card-text::-webkit-scrollbar {
-    width: 4px;
-  }
-
-  .card-text::-webkit-scrollbar-thumb {
-    background: rgba(44, 24, 16, 0.2);
-    border-radius: 2px;
-  }
-
-  .card-hint {
-    font-family: var(--font-body);
-    font-size: 13px;
-    color: var(--ink-light);
-    text-align: center;
-    letter-spacing: 2px;
-    opacity: 0;
-    transition: opacity 1s var(--easing);
-    border-top: 1px solid rgba(44, 24, 16, 0.08);
-    padding-top: 12px;
-  }
-
-  .card-hint--visible {
-    opacity: 1;
-  }
-
-  /* ═══════════════════════════════════════════════════
-     移动端适配 — 小屏缩放 + 触摸优化
-     ═══════════════════════════════════════════════════ */
-
-  /* ── 平板/大屏手机 (≤768px) ── */
-  @media (max-width: 768px) {
-    #stage { gap: 24px; padding: 20px 12px; }
-
-    .compass {
-      width: 240px;
-      height: 240px;
-      filter: none;
-    }
-    .compass::before { inset: -22px; }
-    .compass-ring--outer {
-      width: 240px; height: 240px;
-      margin: -120px 0 0 -120px;
-      border-width: 2px;
-    }
-    .compass-ring--mid {
-      width: 208px; height: 208px;
-      margin: -104px 0 0 -104px;
-    }
-    .compass-ring--inner {
-      width: 176px; height: 176px;
-      margin: -88px 0 0 -88px;
-    }
-    .compass-center {
-      width: 136px; height: 136px;
-      margin: -68px 0 0 -68px;
-      font-size: 38px;
-      letter-spacing: 4px;
-    }
-    .trigram { font-size: 15px; }
-
-    .compass-row { gap: 24px; }
-    .arrow { width: 56px; height: 56px; font-size: 32px; }
-
-    .token {
-      width: 64px;
-      height: 148px;
-      font-size: 32px;
-      letter-spacing: 5px;
-    }
-    #tokens-container { gap: 14px; }
-
-    .reading-card {
-      width: 92vw;
-      max-height: 65vh;
-      padding: 24px 28px;
-      gap: 12px;
-    }
-    .card-tag { font-size: 18px; }
-    .card-time { font-size: 14px; }
-    .card-text { font-size: 15px; line-height: 1.8; }
-    .card-hint { font-size: 12px; }
-    /* 移动端性能优化：关闭耗GPU动画 */
-    .hero-star { animation: none !important; opacity: 0.7; }
-    #starfield::after { animation: none !important; opacity: 0.5; }
-  }
-
-  /* ── 小屏手机 (≤480px) ── */
-  @media (max-width: 480px) {
-    #stage { gap: 16px; padding: 12px 8px; }
-
-    .compass {
-      width: 190px;
-      height: 190px;
-    }
-    .compass::before { inset: -16px; }
-    .compass-ring--outer {
-      width: 190px; height: 190px;
-      margin: -95px 0 0 -95px;
-      border-width: 1.5px;
-    }
-    .compass-ring--mid {
-      width: 165px; height: 165px;
-      margin: -82px 0 0 -82px;
-    }
-    .compass-ring--inner {
-      width: 140px; height: 140px;
-      margin: -70px 0 0 -70px;
-    }
-    .compass-center {
-      width: 108px; height: 108px;
-      margin: -54px 0 0 -54px;
-      font-size: 30px;
-      letter-spacing: 3px;
-    }
-    .trigram { font-size: 13px; }
-
-    .compass-row { gap: 20px; }
-    .arrow { width: 52px; height: 52px; font-size: 28px; }
-
-    .token {
-      width: 52px;
-      height: 128px;
-      font-size: 28px;
-      letter-spacing: 4px;
-    }
-    #tokens-container { gap: 10px; }
-
-    .reading-card {
-      width: 96vw;
-      max-height: 70vh;
-      padding: 20px 20px;
-      gap: 10px;
-    }
-    .card-tag { font-size: 16px; letter-spacing: 2px; }
-    .card-time { font-size: 13px; }
-    .card-text { font-size: 14px; line-height: 1.7; }
-    .card-hint { font-size: 11px; }
-  }
-
-  /* ── 触摸优化 ── */
-  .token, .arrow, .compass-center {
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  /* ── 窄屏令牌换行 (≤360px) ── */
-  @media (max-width: 380px) {
-    #tokens-container {
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 10px 12px;
-      max-width: 280px;
-      margin: 0 auto;
-    }
-    .token {
-      width: 68px;
-      height: 136px;
-      font-size: 30px;
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .star-layer { animation: none !important; }
-    .hero-star { animation: none !important; }
-    .shooting-star { display: none !important; }
-    .compass-center { transition: none !important; }
-    .arrow { transition: none !important; }
-    .token { animation: none !important; }
-    .particle { display: none !important; }
-    .token--selected { animation: none !important; transition: none !important; }
-    .token--dimmed { animation: none !important; opacity: 0 !important; }
-    .reading-card { transition: none !important; opacity: 0 !important; }
-    .reading-card--visible { opacity: 1 !important; transform: translate(-50%, -50%) scale(1) !important; }
-    .card-hint { transition: none !important; }
-  }
+<style>
+/* ═══════════════════════════════════════════════
+   云篆 v2 — 移动端优先 · Canvas 星图 · 干净架构
+   ═══════════════════════════════════════════════ */
+:root {
+  --bg: #0D0D14;
+  --bronze: #6B3A2A;
+  --bronze-l: #8B5A3C;
+  --bronze-d: #3E2418;
+  --cinnabar: #C41E3A;
+  --cinnabar-l: #E23D3D;
+  --paper: #C8B896;
+  --ink: #3C1010;
+  --ink-l: #4A3728;
+  --bamboo: #F0EAD6;
+  --bamboo-d: #E0D5C0;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --compass: 240px; /* 移动端罗盘尺寸 */
+}
+/* ── 全局 ── */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{
+  width:100vw;height:100dvh;overflow:hidden;
+  background:var(--bg);color:var(--bamboo);
+  font-family:'KaiTi','楷体','STKaiti','SimSun',serif;
+  user-select:none;-webkit-user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+}
+canvas#starfield{position:fixed;inset:0;z-index:0;pointer-events:none}
+
+/* ── 主舞台 ── */
+#stage{
+  position:fixed;inset:0;z-index:1;
+  display:flex;flex-direction:column;
+  justify-content:center;align-items:center;
+  gap:24px;padding:16px 8px;
+}
+
+/* ── 罗盘行 ── */
+.compass-row{display:flex;align-items:center;gap:16px}
+
+/* ── 箭头 — 移动端大触控区 ── */
+.arrow{
+  width:48px;height:48px;min-width:48px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:28px;color:var(--bronze);flex-shrink:0;
+  cursor:pointer;
+  text-shadow:0 0 8px rgba(107,58,42,0.3);
+  transition:color .3s var(--ease),text-shadow .3s var(--ease);
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+  user-select:none;-webkit-user-select:none;
+}
+.arrow:active{color:var(--bronze-l);text-shadow:0 0 20px rgba(139,90,60,0.6)}
+
+/* ── 罗盘 ── */
+.compass{
+  position:relative;width:var(--compass);height:var(--compass);flex-shrink:0;
+  will-change:transform;
+  animation:compassSpin 120s linear infinite;
+}
+@keyframes compassSpin{to{transform:rotate(360deg)}}
+.compass-ring{
+  position:absolute;border-radius:50%;top:50%;left:50%;
+  pointer-events:none;
+  will-change:transform;transform:translateZ(0);
+}
+.compass-ring--outer{
+  width:100%;height:100%;
+  margin:-50% 0 0 -50%;
+  border:2.5px solid var(--bronze);
+  box-shadow:0 0 24px rgba(107,58,42,.2),inset 0 0 40px rgba(107,58,42,.1);
+  animation:ringRev 90s linear infinite;
+}
+.compass-ring--mid{
+  width:calc(var(--compass)*0.86);height:calc(var(--compass)*0.86);
+  margin:calc(var(--compass)*-0.43) 0 0 calc(var(--compass)*-0.43);
+  border:1px dashed rgba(139,90,60,.5);
+  animation:ringFwd 70s linear infinite;
+}
+.compass-ring--inner{
+  width:calc(var(--compass)*0.73);height:calc(var(--compass)*0.73);
+  margin:calc(var(--compass)*-0.365) 0 0 calc(var(--compass)*-0.365);
+  border:1px solid rgba(107,58,42,.4);
+  animation:ringRev 110s linear infinite;
+}
+@keyframes ringRev{to{transform:translateZ(0) rotate(-360deg)}}
+@keyframes ringFwd{to{transform:translateZ(0) rotate(360deg)}}
+
+.compass-center{
+  position:absolute;top:50%;left:50%;
+  width:calc(var(--compass)*0.56);height:calc(var(--compass)*0.56);
+  margin:calc(var(--compass)*-0.28) 0 0 calc(var(--compass)*-0.28);
+  border-radius:50%;
+  background:radial-gradient(circle at 45% 40%,#1a1520,var(--bg) 70%);
+  border:1.5px solid rgba(107,58,42,.4);
+  display:flex;align-items:center;justify-content:center;
+  font-size:32px;letter-spacing:4px;color:var(--bronze-l);
+  animation:compassCenter 120s linear infinite;
+  cursor:pointer;
+  text-shadow:0 0 10px rgba(139,90,60,.3);
+  z-index:2;
+}
+@keyframes compassCenter{to{transform:rotate(-360deg)}}
+.compass-center.text-switch{animation:centerPulse .15s var(--ease)}
+@keyframes centerPulse{50%{transform:rotate(-360deg) scale(1.15)}}
+
+/* ── 心笺 ── */
+#tokens-container{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.token{
+  width:56px;height:130px;
+  background:var(--paper);
+  background-image:
+    radial-gradient(ellipse at 0% 0%,rgba(70,50,20,.15),transparent 35%),
+    radial-gradient(ellipse at 100% 0%,rgba(70,50,20,.12),transparent 30%),
+    radial-gradient(ellipse at 0% 100%,rgba(70,50,20,.1),transparent 32%),
+    radial-gradient(ellipse at 100% 100%,rgba(70,50,20,.14),transparent 28%);
+  border:1px solid rgba(70,50,20,.25);
+  box-shadow:0 3px 16px rgba(0,0,0,.45),inset 0 0 40px rgba(70,50,20,.04);
+  display:flex;align-items:center;justify-content:center;
+  writing-mode:vertical-rl;text-orientation:upright;
+  font-size:30px;font-weight:bold;color:var(--ink);letter-spacing:6px;
+  cursor:pointer;
+  animation:tokenFloat var(--fd) ease-in-out infinite;
+  animation-delay:var(--fdel);
+  transition:transform .35s var(--ease),opacity .35s var(--ease),box-shadow .35s var(--ease),color .35s var(--ease);
+  text-shadow:0 0 3px rgba(60,16,16,.5),0 0 10px rgba(60,16,16,.2);
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+  user-select:none;-webkit-user-select:none;
+}
+@keyframes tokenFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(var(--fa))}}
+.token:active{
+  color:var(--cinnabar);
+  text-shadow:0 0 14px rgba(196,30,58,.5),0 0 32px rgba(196,30,58,.25);
+  box-shadow:0 6px 24px rgba(196,30,58,.15),0 2px 8px rgba(0,0,0,.5);
+}
+.token--selected{
+  animation:none!important;z-index:50;
+  transition:transform .8s var(--ease),opacity .8s var(--ease);
+  color:var(--cinnabar);
+  text-shadow:0 0 14px rgba(196,30,58,.5),0 0 32px rgba(196,30,58,.25);
+}
+.token--dimmed{animation:none!important;opacity:0!important;pointer-events:none;transition:opacity .6s var(--ease)}
+
+/* ── 粒子 ── */
+.particle{
+  position:fixed;width:4px;height:4px;border-radius:50%;
+  background:var(--bronze-l);pointer-events:none;z-index:100;
+  box-shadow:0 0 6px rgba(139,90,60,.6);
+  animation:particleFly .8s var(--ease) forwards;
+}
+@keyframes particleFly{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--px),var(--py)) scale(0)}}
+
+/* ── 竹简卡片 ── */
+.reading-card{
+  position:fixed;top:50%;left:50%;z-index:60;
+  transform:translate(-50%,-50%) scale(.92);
+  width:min(88vw,480px);max-height:70vh;
+  background:linear-gradient(180deg,var(--bamboo) 0%,var(--bamboo-d) 100%);
+  border:2px solid rgba(139,90,60,.3);
+  border-radius:4px;
+  box-shadow:
+    0 8px 40px rgba(0,0,0,.6),
+    0 2px 8px rgba(0,0,0,.3),
+    inset 0 0 80px rgba(139,90,60,.06);
+  padding:28px 24px 20px;
+  display:flex;flex-direction:column;gap:14px;
+  opacity:0;pointer-events:none;
+  overflow-y:auto;
+  font-family:'SimSun','宋体','STSong','FangSong',serif;
+}
+.reading-card--visible{
+  opacity:1;pointer-events:auto;
+  transform:translate(-50%,-50%) scale(1);
+  transition:opacity .4s var(--ease),transform .4s var(--ease);
+}
+.card-tag{font-size:20px;color:var(--bronze);letter-spacing:3px;text-align:center;font-weight:bold}
+.card-time{font-size:14px;color:var(--ink-l);text-align:center;opacity:.7}
+.card-text{font-size:16px;color:var(--ink);line-height:2;text-align:justify;padding:4px 0}
+.card-hint{font-size:12px;color:var(--bronze);text-align:center;opacity:0;margin-top:8px;padding-top:12px;border-top:1px solid rgba(139,90,60,.15)}
+.card-hint--visible{opacity:.6;transition:opacity .8s var(--ease)}
+
+/* ── 环形面板 ── */
+.ring-panel{position:fixed;inset:0;z-index:55;display:none}
+.ring-panel--visible{display:block}
+.ring-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.5)}
+.ring-option{
+  position:absolute;transform:translate(-50%,-50%);
+  font-size:13px;color:var(--bronze);letter-spacing:2px;
+  cursor:pointer;white-space:nowrap;
+  padding:6px 12px;
+  border-radius:12px;
+  background:rgba(13,13,20,.85);
+  border:1px solid rgba(107,58,42,.3);
+  opacity:0;
+  animation:ringPop .4s var(--ease) forwards;
+  animation-delay:var(--rd);
+  touch-action:manipulation;-webkit-tap-highlight-color:transparent;
+}
+@keyframes ringPop{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+.ring-option--active{color:var(--cinnabar-l);border-color:rgba(196,30,58,.5);text-shadow:0 0 8px rgba(196,30,58,.3)}
 </style>
 </head>
 <body>
-
-<!-- ═══════════════════════════════════════════════════════════
-  舞台结构（对应仪式五幕：入境→问道→叩心→观象→归真）
-═══════════════════════════════════════════════════════════ -->
-
-<!-- 背景星图层 -->
-<div id="starfield"></div>
-
-<!-- 主舞台 -->
+<canvas id="starfield"></canvas>
 <div id="stage">
-  <!-- 入境：罗盘区域（八卦盘 + 中心类型文字 + 左右青铜箭头） -->
-  <!-- 问道：六张符箓令牌（浮动 + 悬停光晕） -->
-  <!-- 启卦：粒子消散层（JS 动态生成金色光点） -->
-  <!-- 观象：解读卡片（竹简纹理 + 打字机正文 + 时辰行） -->
-  <!-- 归真：点击空白区域，全部淡出复位 -->
+  <div class="compass-row">
+    <div class="arrow arrow--left" id="arrow-left">◂</div>
+    <div class="compass" id="compass">
+      <div class="compass-ring compass-ring--outer"></div>
+      <div class="compass-ring compass-ring--mid"></div>
+      <div class="compass-ring compass-ring--inner"></div>
+      <div class="compass-center" id="mbti-display">INFP</div>
+    </div>
+    <div class="arrow arrow--right" id="arrow-right">▸</div>
+  </div>
+  <div id="tokens-container"></div>
 </div>
 
-<!-- ============================================================
-  模块 2：配置区 <script data-module="config">
-  全局常量：罗盘转速、打字速度、粒子数量、浮动幅度等
-  令牌列表 TOKENS（固定六字）
-  MBTI 类型列表 MBTI_TYPES（16 种）
-  编辑此区域即可调整交互参数，无需触碰逻辑代码
-============================================================ -->
-<script data-module="config">
-  /* ═══════════════════════════════════════════════════
-     全局常量
-     ═══════════════════════════════════════════════════ */
-  const COMPASS_SPEED = 30;
-  const PARTICLE_COUNT = 20;
-  const TYPEWRITER_SPEED_TEXT = 50;
-  const TYPEWRITER_SPEED_TIME = 80;
-  const TOKEN_FLOAT_AMPLITUDE = 6;
-
-  /* ═══════════════════════════════════════════════════
-     令牌列表（六字固定）
-     ═══════════════════════════════════════════════════ */
-  const TOKENS = ['迷途', '坎', '执', '散', '渊', '生'];
-
-  /* ═══════════════════════════════════════════════════
-     MBTI 16 型
-     ═══════════════════════════════════════════════════ */
-  const MBTI_TYPES = [
-    'INFP', 'INFJ', 'INTJ', 'ENFP',
-    'ENFJ', 'ENTJ', 'ESFP', 'ESFJ',
-    'ESTP', 'ESTJ', 'ISFP', 'ISFJ',
-    'ISTP', 'ISTJ', 'INTP', 'ENTP'
-  ];
-  const DEFAULT_MBTI = 'INFP';
-
-  /* ═══════════════════════════════════════════════════
-     星图参数
-     ═══════════════════════════════════════════════════ */
-  /* ── 星图层：极慢天球漂移 ── */
-  const STAR_LAYERS = [
-    { count: 380, size: 1, blur: 0, opacity: 0.20, speed: 1100, driftX: 120, driftY: -30 },
-    { count: 180, size: 2, blur: 1, opacity: 0.32, speed: 1400, driftX: 180, driftY: 20 },
-    { count: 90,  size: 2, blur: 2, opacity: 0.42, speed: 1800, driftX: 250, driftY: -50 },
-    { count: 30,  size: 3, blur: 3, opacity: 0.28, speed: 2200, driftX: 300, driftY: -80 }
-  ];
-
-  /* ── 星色：真实恒星分布 — 大量冷白矮星 + 少量暖黄 ── */
-  const STAR_COLORS = [
-    { r: 185, g: 205, b: 225, weight: 0.48 },  /* 蓝白主序星 */
-    { r: 210, g: 220, b: 235, weight: 0.28 },  /* 白矮星 */
-    { r: 240, g: 225, b: 180, weight: 0.16 },  /* 暖黄 */
-    { r: 245, g: 190, b: 140, weight: 0.08 }   /* 橙红 — 稀有 */
-  ];
-
-  /* ── 亮星：独立不规则闪烁，明亮可见 ── */
-  const HERO_STARS = [
-    { x: '15vw', y: '12vh', size: 3, glow: 6,  color: 'rgba(210,225,245,0.95)', period: 3.2, delay: 0,   dip: 0.35 },
-    { x: '72vw', y: '8vh',  size: 2, glow: 5,  color: 'rgba(200,215,235,0.92)', period: 4.5, delay: 1.2, dip: 0.4 },
-    { x: '38vw', y: '22vh', size: 2, glow: 4,  color: 'rgba(215,225,240,0.85)', period: 2.8, delay: 2.1, dip: 0.5 },
-    { x: '85vw', y: '35vh', size: 2, glow: 4,  color: 'rgba(235,218,175,0.88)', period: 5.2, delay: 0.5, dip: 0.3 },
-    { x: '8vw',  y: '45vh', size: 3, glow: 6,  color: 'rgba(205,220,240,0.93)', period: 3.8, delay: 3.0, dip: 0.25 },
-    { x: '55vw', y: '18vh', size: 2, glow: 4,  color: 'rgba(220,230,242,0.82)', period: 2.5, delay: 1.8, dip: 0.45 },
-    { x: '92vw', y: '55vh', size: 2, glow: 4,  color: 'rgba(245,222,170,0.85)', period: 4.0, delay: 2.5, dip: 0.38 },
-    { x: '25vw', y: '68vh', size: 2, glow: 3,  color: 'rgba(210,225,240,0.8)',  period: 3.5, delay: 0.8, dip: 0.42 },
-    { x: '65vw', y: '72vh', size: 3, glow: 5,  color: 'rgba(215,228,242,0.9)',  period: 5.8, delay: 1.5, dip: 0.3 },
-    { x: '48vw', y: '55vh', size: 2, glow: 4,  color: 'rgba(248,195,140,0.84)', period: 2.2, delay: 3.5, dip: 0.48 },
-    { x: '42vw', y: '38vh', size: 1, glow: 2,  color: 'rgba(225,235,245,0.75)', period: 3.0, delay: 4.2, dip: 0.38 },
-    { x: '18vw', y: '78vh', size: 2, glow: 3,  color: 'rgba(242,228,185,0.82)', period: 4.8, delay: 1.0, dip: 0.35 },
-    { x: '78vw', y: '82vh', size: 2, glow: 4,  color: 'rgba(210,228,242,0.8)',  period: 3.6, delay: 2.8, dip: 0.32 },
-    { x: '32vw', y: '5vh',  size: 3, glow: 6,  color: 'rgba(200,215,238,0.9)',  period: 4.2, delay: 0.4, dip: 0.28 },
-    { x: '60vw', y: '42vh', size: 2, glow: 3,  color: 'rgba(245,218,165,0.78)', period: 2.0, delay: 5.0, dip: 0.5 },
-    { x: '95vw', y: '15vh', size: 2, glow: 4,  color: 'rgba(218,230,245,0.85)', period: 3.4, delay: 1.6, dip: 0.36 }
-  ];
-
-  /* ── 流星：双颗交替，间隔 8-16s ── */
-  const SHOOTING_STAR = { x: '90vw', y: '12vh', dx: '-80vw', dy: '45vh', dur: 1.5, delay: 0 };
-
-  /* ═══════════════════════════════════════════════════
-     八卦爻符字符
-     ═══════════════════════════════════════════════════ */
-  const TRIGRAMS = ['☰', '☱', '☲', '☳', '☴', '☵', '☶', '☷'];
-</script>
-
-<!-- ============================================================
-  模块 3：数据层 <script data-module="data">
-  核心对象 TOKEN_DATA，按 类型 > 心笺 > [{text, time}] 存储
-  辅助函数：
-    getReading(mbti, token) — 随机抽取 + 防重复
-    resetSessionHistory()   — 归真时清除记录
-  编辑此区域即可更新全部文案，保持格式严格一致
-============================================================ -->
-<script data-module="data">
-  /* ═══════════════════════════════════════════════════
-     MBTI 类型标签（中文雅号）
-     ═══════════════════════════════════════════════════ */
-  var TYPE_TAGS = {
-    'INFP': '逍遥散人',
-    'INTJ': '弈天者',
-    'INFJ': '渡人舟',
-    'ENFP': '逐风客'
-  };
-
-  /* ═══════════════════════════════════════════════════
-     TOKEN_DATA — 4类型×6令牌×2变体 = 48组
-     ═══════════════════════════════════════════════════ */
-  var TOKEN_DATA = {
-    "INFP": {
-      "迷途": [
-        { text: "雾中有路，只是眼看不见。我闭上眼，用脚底去听——听那最细的根须如何选择泥土的方向。", time: "卯时初刻 · 晨露未晞" },
-        { text: "迷途本身或许就是归途。何必急着走出这片森林？林深处，才有别人不曾见过的月光。", time: "亥时三刻 · 月满西楼" }
-      ],
-      "坎": [
-        { text: "水遇石则绕，绕不过便蓄成一潭。潭深了，反而照见天光。我的柔软，原是最韧的铠甲。", time: "午时初刻 · 云雾初开" },
-        { text: "我筑了一座水晶宫，晶莹剔透，却一碰就碎。外面的石子飞来时，我分不清哪个是恶意，哪个只是风。", time: "申时三刻 · 暮鼓声远" }
-      ],
-      "执": [
-        { text: "手里攥着一颗种子，别人说干瘪了，我偏要等它发芽。十年不长，我便等二十年。这不是固执，是信。", time: "辰时三刻 · 风起萍末" },
-        { text: "我守着心里的那盏灯，生怕它灭了。可我忘了——握得太紧，手心会出汗，灯火反而会溺死在掌纹里。", time: "子时初刻 · 万籁俱寂" }
-      ],
-      "散": [
-        { text: "蒲公英散了，每一朵都带着整棵植株的魂。我不必聚在一起才有意义——飘到哪儿，哪儿就是归处。", time: "巳时初刻 · 云淡风轻" },
-        { text: "我把心掰成许多块分出去，收回来时才发现——没有人分给我他们的。空着手站在人群里，比独处更冷。", time: "戌时三刻 · 归鸟入林" }
-      ],
-      "渊": [
-        { text: "静水深流，表面不见波澜，底下却藏着暗涌与虹彩。你只看我一眼便走，自然错过了万丈之下的奇观。", time: "丑时初刻 · 星垂平野" },
-        { text: "我往心里挖了很深的井，本想取水，却挖出了从未见过的影子。井太深了，有时连自己都听不见自己的回声。", time: "酉时三刻 · 暮色四合" }
-      ],
-      "生": [
-        { text: "蚕以为自己要死了，结果长出了翅膀。我每一次以为走到了尽头，回头看，不过是蜕了一层旧皮。", time: "寅时三刻 · 东方既白" },
-        { text: "种子裂开的时候是疼的，但它不裂开，便永远不知道自己是一棵树。我正在裂开的路上，不知道还要疼多久。", time: "未时初刻 · 水落石出" }
-      ]
-    },
-    "INTJ": {
-      "迷途": [
-        { text: "方向不是别人给的，是自己算出来的。我在星图上画了七十二道线，每一条都通向同一个终点——我认定的那个。", time: "子时三刻 · 斗转星移" },
-        { text: "我总想看清整盘棋，可我忘了棋局没有边界。算得尽天下，算不尽自己。", time: "申时初刻 · 日昃之离" }
-      ],
-      "坎": [
-        { text: "低谷是俯瞰全局最好的位置。山脚下看不清的路，山顶上未必能看清——但盆地正中，反而一目了然。", time: "丑时初刻 · 星垂平野" },
-        { text: "我习惯独自翻过每一道坎。但我建了太高的墙，别人进不来，我也出不去。", time: "戌时初刻 · 暮云四合" }
-      ],
-      "执": [
-        { text: "他们说这是执念，我说这是蓝图。这个世界的秩序从来由不肯放手的人建成，不是随缘的人。", time: "辰时初刻 · 东方既白" },
-        { text: "我一手搭建的棋局，每一步都算到了——唯独没算到自己也会累。", time: "亥时三刻 · 月落乌啼" }
-      ],
-      "散": [
-        { text: "沙粒散了各自为战，但我把它们炼成了玻璃。无序里找到规律——这本就是我最擅长的事。", time: "巳时三刻 · 日上三竿" },
-        { text: "我把一切整理得井井有条，唯独整理不了自己心里的那团乱麻。", time: "酉时初刻 · 归鸟入林" }
-      ],
-      "渊": [
-        { text: "深渊不是用来跳的，是用来测绘的。我花了十年丈量它的深度，最后发现它可以被架成一座桥。", time: "寅时初刻 · 晨露未晞" },
-        { text: "我总在追寻最深的答案，但有些问题没有底。悬在半空的时候，比掉进去还难受。", time: "子时初刻 · 万籁俱寂" }
-      ],
-      "生": [
-        { text: "每一个系统都有漏洞，而我在漏洞里种了一片森林。规则之外的事，往往才是真正的规则。", time: "卯时初刻 · 云雾初开" },
-        { text: "我设计了一整套人生模型，唯独调试不了那一行——叫做'不去控制'。", time: "午时三刻 · 日正当中" }
-      ]
-    },
-    "INFJ": {
-      "迷途": [
-        { text: "你在雾中给我指路，自己的鞋却早已湿透。没关系——我渡人，便是渡己。", time: "卯时初刻 · 晨露未晞" },
-        { text: "我点亮了很多人的灯，却忘了自己的那盏已经微弱得快要灭掉。谁来渡我？", time: "亥时初刻 · 星汉西流" }
-      ],
-      "坎": [
-        { text: "坎不是惩罚，是功课。你跨过它的时候，它正在教会两个世界的人如何握手。", time: "午时初刻 · 云雾初开" },
-        { text: "我太擅长体会别人的痛了，痛到分不清哪些是我的，哪些是我替别人背的。", time: "戌时三刻 · 暮鼓声远" }
-      ],
-      "执": [
-        { text: "我不是执，是知道那条路虽然远，但通往一个所有人都能安坐的黄昏。", time: "辰时三刻 · 风起萍末" },
-        { text: "我想让每一个人都好起来。可我弄丢了一个人——镜子里那个。", time: "子时三刻 · 斗转星移" }
-      ],
-      "散": [
-        { text: "我收集每一颗掉落的星，用看不见的线把它们缝成星座。散了，不过是换了一个形状。", time: "巳时初刻 · 云淡风轻" },
-        { text: "我把自己给了太多人。收回来的时候才发现，给出去的那些碎片已经拼不回去了。", time: "酉时三刻 · 暮色四合" }
-      ],
-      "渊": [
-        { text: "深渊底下有温泉——这是我潜入深渊之后才知道的。我不怕深，只怕浅得看不见光。", time: "丑时初刻 · 星垂平野" },
-        { text: "有些人来向我倾诉，把深渊倒给我之后就轻松地走了。而我抱着他们的深渊，走不出去。", time: "申时三刻 · 日昃之离" }
-      ],
-      "生": [
-        { text: "一粒种子埋进土里，死了，春天便长出森林。不是所有牺牲都是悲剧——有些是约定的开始。", time: "寅时三刻 · 东方既白" },
-        { text: "我总在帮别人找到意义。可我自己的意义，谁来帮我确认？", time: "未时初刻 · 水落石出" }
-      ]
-    },
-    "ENFP": {
-      "迷途": [
-        { text: "迷路是探险的入场券——每条岔路都藏着不曾预设的风景。我追逐的不是方向，是风。", time: "巳时初刻 · 云淡风轻" },
-        { text: "我跑得太快了，回头时才发现当初同行的人都不见了。风的代价，是没有根。", time: "酉时三刻 · 暮色四合" }
-      ],
-      "坎": [
-        { text: "跌倒了正好换个角度看世界。地上的蚂蚁不知道我在俯视它们，就像我不知道谁在俯视我。", time: "未时初刻 · 水落石出" },
-        { text: "我总能在困境里找到出口，但新鲜的出口太多，以至于没有一条路走到尽头。", time: "子时初刻 · 万籁俱寂" }
-      ],
-      "执": [
-        { text: "我执于可能性本身。不相信有死胡同，只相信还没找到那条缝隙——每堵墙都欠我一个惊喜。", time: "辰时初刻 · 东方既白" },
-        { text: "我想要抓住每一阵风。可我忘了，手心里的不是风，是空。", time: "亥时初刻 · 月满西楼" }
-      ],
-      "散": [
-        { text: "散落在各处的火种，正是我的特权。今天在此处燃烧，明天在彼处燎原——这世界需要野火。", time: "午时三刻 · 日正当中" },
-        { text: "我在人群中如鱼得水，却在凌晨三点的房间里被寂静淹死。热闹是我的铠甲，不是我的家。", time: "寅时初刻 · 晨露未晞" }
-      ],
-      "渊": [
-        { text: "深渊是探险的最高级别。我不怕暗——太亮了反而没有惊喜。来，一起跳，我带了伞。", time: "申时初刻 · 日昃之离" },
-        { text: "我笑得太大声了，所以没人听见我安静时的求救。深渊不是黑色的——是最鲜艳的孤独。", time: "丑时三刻 · 星垂平野" }
-      ],
-      "生": [
-        { text: "生了又死，死了又生——凤凰的游戏。而我是那只不断从灰烬里爬起来，却每次换一身新羽毛的鸟。", time: "卯时三刻 · 云雾初开" },
-        { text: "我点燃了一千个梦，每一个都是真的——至少在那一刻。可我只有一个明天，装不下一千个真的梦。", time: "戌时初刻 · 暮云四合" }
-      ]
-    }
-  };
-
-  /* ═══════════════════════════════════════════════════
-     会话历史 + 防重复抽取
-     ═══════════════════════════════════════════════════ */
-  var sessionHistory = {};
-
-  function getReading(mbti, token) {
-    var typeData = TOKEN_DATA[mbti];
-    if (!typeData) return null;
-    var tokenEntries = typeData[token];
-    if (!tokenEntries || tokenEntries.length === 0) return null;
-
-    var key = mbti + '_' + token;
-    if (!sessionHistory[key]) sessionHistory[key] = [];
-
-    var shown = sessionHistory[key];
-    var available = [];
-    for (var i = 0; i < tokenEntries.length; i++) {
-      if (shown.indexOf(i) === -1) available.push(tokenEntries[i]);
-    }
-
-    if (available.length === 0) {
-      sessionHistory[key] = [];
-      shown = sessionHistory[key];
-      available = tokenEntries.slice();
-    }
-
-    var pick = available[Math.floor(Math.random() * available.length)];
-    var idx = tokenEntries.indexOf(pick);
-    shown.push(idx);
-
-    return pick;
-  }
-
-  function resetSessionHistory() {
-    sessionHistory = {};
-  }
-</script>
-
-<!-- ============================================================
-  模块 4：视觉渲染引擎 <script data-module="render">
-  所有 DOM 创建与样式操作
-    createStarfield()      — 三层极慢天球漂移 + 四色恒星分布
-    createHeroStars()      — 10颗亮星独立不规则闪烁
-    createShootingStar()   — 单颗稀有流星长间隔循环
-    renderCompass()        — 罗盘纹样 + 中心文字
-    renderRingPanel()      — 16 型环形全览
-    renderTokens()         — 令牌浮动
-    createReadingCard()    — 竹简卡片
-  环形全览坐标算法：将 16 个选项均匀分布在圆周上，
-  每个选项的 (x, y) = (cx + R*cos(θ), cy + R*sin(θ))
-============================================================ -->
-<script data-module="render">
-  /* ═══════════════════════════════════════════════════
-     背景星图 — 极慢漂移 + 多色微星
-     ═══════════════════════════════════════════════════ */
-  function createStarfield() {
-    var container = document.getElementById('starfield');
-    if (!container) return;
-
-    // Mobile performance: scale star count by screen width
-    var width = window.innerWidth;
-    var scaleFactor = width <= 480 ? 0.20 : width <= 768 ? 0.35 : 1.0;
-
-    STAR_LAYERS.forEach(function (layer) {
-      var div = document.createElement('div');
-      div.className = 'star-layer';
-      div.style.setProperty('--speed', layer.speed + 's');
-      div.style.setProperty('--drift-x', layer.driftX + 'px');
-      div.style.setProperty('--drift-y', layer.driftY + 'px');
-
-      var shadows = [];
-      var baseSize = layer.size;
-      var starCount = Math.ceil(layer.count * scaleFactor);
-      for (var i = 0; i < starCount; i++) {
-        var x = (Math.random() * 1200 - 600).toFixed(1);
-        var y = (Math.random() * 1200 - 600).toFixed(1);
-        /* 星点大小随机 — 模拟真实星空远近层次 */
-        var starSize = (baseSize * (0.4 + Math.random() * 1.8)).toFixed(1);
-        var starBlur = layer.blur > 0 ? (layer.blur * (0.3 + Math.random() * 1.4)).toFixed(1) : 0;
-        var starOpacity = (layer.opacity * (0.5 + Math.random() * 1.0)).toFixed(3);
-        shadows.push(x + 'px ' + y + 'px ' + starBlur + 'px ' + starSize + 'px ' + pickStarColor(starOpacity));
-      }
-      div.style.boxShadow = shadows.join(', ');
-      div.style.width = layer.size + 'px';
-      div.style.height = layer.size + 'px';
-
-      container.appendChild(div);
-    });
-  }
-
-  function pickStarColor(opacity) {
-    var r = Math.random();
-    var acc = 0;
-    for (var i = 0; i < STAR_COLORS.length; i++) {
-      acc += STAR_COLORS[i].weight;
-      if (r <= acc) {
-        var c = STAR_COLORS[i];
-        return 'rgba(' + c.r + ',' + c.g + ',' + c.b + ',' + opacity + ')';
-      }
-    }
-    return 'rgba(175,195,215,' + opacity + ')';
-  }
-
-  /* ═══════════════════════════════════════════════════
-     亮星 — 独立不规则闪烁
-     ═══════════════════════════════════════════════════ */
-  function createHeroStars() {
-    HERO_STARS.forEach(function (h) {
-      var star = document.createElement('div');
-      star.className = 'hero-star';
-      star.style.left = h.x;
-      star.style.top = h.y;
-      star.style.width = h.size + 'px';
-      star.style.height = h.size + 'px';
-      star.style.background = h.color;
-      star.style.boxShadow = '0 0 ' + h.glow + 'px ' + h.color;
-      star.style.setProperty('--hero-period', h.period + 's');
-      star.style.setProperty('--hero-delay', h.delay + 's');
-      star.style.setProperty('--hero-dip', h.dip);
-      document.body.appendChild(star);
-    });
-  }
-
-  /* ═══════════════════════════════════════════════════
-     流星 — 单颗稀有，长间隔
-     ═══════════════════════════════════════════════════ */
-  function createShootingStar() {
-    var s = SHOOTING_STAR;
-    var star = document.createElement('div');
-    star.className = 'shooting-star';
-    star.style.left = s.x;
-    star.style.top = s.y;
-    star.style.setProperty('--shoot-dx', s.dx);
-    star.style.setProperty('--shoot-dy', s.dy);
-    star.style.setProperty('--shoot-duration', s.dur + 's');
-    star.style.setProperty('--shoot-delay', s.delay + 's');
-    document.body.appendChild(star);
-
-    /* 流星结束后重建，间隔 15-35s */
-    /* 流星结束后重建，间隔 8-16s */
-    setInterval(function () {
-      var old = document.querySelector('.shooting-star');
-      if (old) old.remove();
-      var next = document.createElement('div');
-      next.className = 'shooting-star';
-      next.style.left = (75 + Math.random() * 20) + 'vw';
-      next.style.top = (Math.random() * 30) + 'vh';
-      next.style.setProperty('--shoot-dx', '-' + (60 + Math.random() * 30) + 'vw');
-      next.style.setProperty('--shoot-dy', (30 + Math.random() * 35) + 'vh');
-      next.style.setProperty('--shoot-duration', (1.2 + Math.random() * 1.6).toFixed(1) + 's');
-      next.style.setProperty('--shoot-delay', '0s');
-      document.body.appendChild(next);
-    }, 8000 + Math.random() * 8000);
-  }
-
-  /* ═══════════════════════════════════════════════════
-     罗盘组件
-     ═══════════════════════════════════════════════════ */
-  function renderCompass() {
-    var row = document.querySelector('.compass-row');
-    if (!row) return;
-
-    /* ── 罗盘容器 ── */
-    var compass = document.createElement('div');
-    compass.className = 'compass';
-    compass.id = 'compass';
-
-    /* ── 三层同心环 ── */
-    ['outer', 'mid', 'inner'].forEach(function (tier) {
-      var ring = document.createElement('div');
-      ring.className = 'compass-ring compass-ring--' + tier;
-      compass.appendChild(ring);
-    });
-
-    /* ── 八卦爻符（直接计算 x/y 坐标，半径 140px） ── */
-    TRIGRAMS.forEach(function (char, i) {
-      var span = document.createElement('span');
-      span.className = 'trigram';
-      span.textContent = char;
-      var angle = (i / 8) * 2 * Math.PI;   /* 从顶部顺时针 */
-      var tx = (128 * Math.sin(angle)).toFixed(1);
-      var ty = (-128 * Math.cos(angle)).toFixed(1);
-      span.style.setProperty('--tx', tx + 'px');
-      span.style.setProperty('--ty', ty + 'px');
-      compass.appendChild(span);
-    });
-
-    /* ── 中心文字圆 ── */
-    var center = document.createElement('div');
-    center.className = 'compass-center';
-    center.id = 'mbti-display';
-    center.textContent = DEFAULT_MBTI;
-    compass.appendChild(center);
-
-    row.appendChild(compass);
-  }
-
-  /* ── 箭头按钮 ── */
-  function renderArrows() {
-    var stage = document.getElementById('stage');
-    if (!stage) return;
-
-    var row = document.createElement('div');
-    row.className = 'compass-row';
-
-    var left = document.createElement('div');
-    left.className = 'arrow arrow--left';
-    left.id = 'arrow-left';
-    left.textContent = '◂';
-
-    var right = document.createElement('div');
-    right.className = 'arrow arrow--right';
-    right.id = 'arrow-right';
-    right.textContent = '▸';
-
-    row.appendChild(left);
-    row.appendChild(right);
-    stage.appendChild(row);
-  }
-
-  /* ── 令牌组 ── */
-  function renderTokens() {
-    var stage = document.getElementById('stage');
-    if (!stage) return;
-
-    var container = document.createElement('div');
-    container.id = 'tokens-container';
-
-    var durations = [3.2, 3.6, 3.0, 3.8, 3.3, 3.5];
-    var delays = [0, 0.5, 1.0, 1.5, 0.3, 0.8];
-
-    TOKENS.forEach(function (name, i) {
-      var token = document.createElement('div');
-      token.className = 'token';
-      token.setAttribute('data-token', name);
-      token.textContent = name;
-      token.style.setProperty('--float-duration', durations[i] + 's');
-      token.style.setProperty('--float-delay', delays[i] + 's');
-      token.style.setProperty('--float-amp', TOKEN_FLOAT_AMPLITUDE + 'px');
-      container.appendChild(token);
-    });
-
-    stage.appendChild(container);
-  }
-
-  /* ── 环形全览面板 — 16型圆周菜单 ── */
-  var ringPanelVisible = false;
-  var ringPanelEl = null;
-
-  function renderRingPanel() {
-    if (ringPanelEl) return;
-    var panel = document.createElement('div');
-    panel.className = 'ring-panel';
-    panel.id = 'ring-panel';
-    var backdrop = document.createElement('div');
-    backdrop.className = 'ring-backdrop';
-    backdrop.addEventListener('click', function () { hideRingPanel(); });
-    panel.appendChild(backdrop);
-    var compass = document.getElementById('compass');
-    if (!compass) { document.body.appendChild(panel); ringPanelEl = panel; return; }
-    var compassRect = compass.getBoundingClientRect();
-    var cx = compassRect.left + compassRect.width / 2;
-    var cy = compassRect.top + compassRect.height / 2;
-    var radius = compassRect.width * 0.58;
-    MBTI_TYPES.forEach(function (type, i) {
-      var angle = (i / MBTI_TYPES.length) * 2 * Math.PI - Math.PI / 2;
-      var x = cx + radius * Math.cos(angle);
-      var y = cy + radius * Math.sin(angle);
-      var opt = document.createElement('div');
-      opt.className = 'ring-option';
-      if (type === MBTI_TYPES[currentIndex]) { opt.classList.add('ring-option--active'); }
-      opt.textContent = (TYPE_TAGS[type] || '') ? type + ' · ' + TYPE_TAGS[type] : type;
-      opt.setAttribute('data-mbti', type);
-      opt.style.left = x + 'px';
-      opt.style.top = y + 'px';
-      opt.style.setProperty('--ring-delay', (i * 0.03).toFixed(2) + 's');
-      opt.addEventListener('click', function (e) {
-        e.stopPropagation();
-        var mbti = this.getAttribute('data-mbti');
-        var idx = MBTI_TYPES.indexOf(mbti);
-        if (idx >= 0) { currentIndex = idx; updateDisplay(); }
-        hideRingPanel();
-      });
-      panel.appendChild(opt);
-    });
-    document.body.appendChild(panel);
-    ringPanelEl = panel;
-  }
-
-  function toggleRingPanel() {
-    if (isCardVisible) return;
-    if (!ringPanelEl) renderRingPanel();
-    if (ringPanelVisible) { hideRingPanel(); }
-    else { showRingPanel(); }
-  }
-
-  function showRingPanel() {
-    if (isCardVisible) return;
-    if (ringPanelEl) { ringPanelEl.remove(); ringPanelEl = null; }
-    renderRingPanel();
-    if (!ringPanelEl) return;
-    var opts = ringPanelEl.querySelectorAll('.ring-option');
-    for (var i = 0; i < opts.length; i++) {
-      opts[i].classList.remove('ring-option--active');
-      if (opts[i].getAttribute('data-mbti') === MBTI_TYPES[currentIndex]) {
-        opts[i].classList.add('ring-option--active');
-      }
-    }
-    ringPanelEl.classList.add('ring-panel--visible');
-    ringPanelVisible = true;
-  }
-
-  function hideRingPanel() {
-    if (!ringPanelEl) return;
-    ringPanelEl.classList.remove('ring-panel--visible');
-    ringPanelVisible = false;
-  }
-
-  /* ═══════════════════════════════════════════════════
-     解读卡片 — 竹简卡片 DOM
-     返回 { card, timeEl, textEl, hintEl } 引用
-     ═══════════════════════════════════════════════════ */
-  function createReadingCard(mbti, tokenName, readingData) {
-    var existing = document.querySelector('.reading-card');
-    if (existing) existing.remove();
-
-    var card = document.createElement('div');
-    card.className = 'reading-card';
-    card.id = 'reading-card';
-
-    var tag = document.createElement('div');
-    tag.className = 'card-tag';
-    tag.textContent = mbti + ' · ' + (TYPE_TAGS[mbti] || '');
-
-    var time = document.createElement('div');
-    time.className = 'card-time';
-
-    var text = document.createElement('div');
-    text.className = 'card-text';
-
-    var hint = document.createElement('div');
-    hint.className = 'card-hint';
-    hint.textContent = '道法自然，不必执着 · 点击别处再探';
-
-    card.appendChild(tag);
-    card.appendChild(time);
-    card.appendChild(text);
-    card.appendChild(hint);
-    document.body.appendChild(card);
-
-    return { card: card, timeEl: time, textEl: text, hintEl: hint };
-  }
-</script>
-
-<!-- ============================================================
-  模块 5：动效控制器 <script data-module="effects">
-  纯视觉动效工具，不涉及业务状态
-    playParticleBurst(x, y)  — 在指定坐标生成粒子，0.8s 消散
-    typewriter(el, text, ms) — 逐字显现，返回 Promise
-    fadeIn / fadeOut         — 通用淡入淡出
-    moveToCenter / resetPosition — 令牌飞升与归位
-============================================================ -->
-<script data-module="effects">
-  /* ═══════════════════════════════════════════════════
-     粒子爆发
-     在 (x, y) 坐标生成 PARTICLE_COUNT 个金色粒子，
-     随机方向飞行 0.8s 后自动移除 DOM
-     ═══════════════════════════════════════════════════ */
-  function createParticles(x, y) {
-    for (var i = 0; i < PARTICLE_COUNT; i++) {
-      var particle = document.createElement('div');
-      particle.className = 'particle';
-      particle.style.left = x + 'px';
-      particle.style.top = y + 'px';
-
-      var angle = Math.random() * 2 * Math.PI;
-      var distance = 60 + Math.random() * 140;
-      particle.style.setProperty('--px', (Math.cos(angle) * distance).toFixed(1) + 'px');
-      particle.style.setProperty('--py', (Math.sin(angle) * distance).toFixed(1) + 'px');
-      particle.style.animation = 'yunInkSpread 0.8s cubic-bezier(0.25,0.1,0.25,1) forwards, particleBurst 0.8s var(--easing) forwards';
-
-      document.body.appendChild(particle);
-    }
-
-    setTimeout(function () {
-      var particles = document.querySelectorAll('.particle');
-      for (var i = 0; i < particles.length; i++) {
-        particles[i].remove();
-      }
-    }, 800);
-  }
-
-  /* ═══════════════════════════════════════════════════
-     打字机效果 — 逐字显现，返回 Promise
-     ═══════════════════════════════════════════════════ */
-  function typewrite(el, text, speed) {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      el.textContent = text;
-      return Promise.resolve();
-    }
-    return new Promise(function (resolve) {
-      el.textContent = '';
-      var i = 0;
-      var len = text.length;
-      function type() {
-        if (i >= len) { resolve(); return; }
-        el.textContent += text.charAt(i);
-        i++;
-        setTimeout(type, speed);
-      }
-      type();
-    });
-  }
-
-  /* ── 淡入 ── */
-  function fadeIn(el, duration) {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      el.style.opacity = '1';
-      return Promise.resolve();
-    }
-    var dur = duration || 300;
-    return new Promise(function (resolve) {
-      el.style.opacity = '0';
-      requestAnimationFrame(function () {
-        el.style.transition = 'opacity ' + dur + 'ms var(--easing)';
-        el.style.opacity = '1';
-        setTimeout(resolve, dur);
-      });
-    });
-  }
-
-  /* ── 淡出 ── */
-  function fadeOut(el, duration) {
-    var dur = duration || 300;
-    return new Promise(function (resolve) {
-      el.style.transition = 'opacity ' + dur + 'ms var(--easing)';
-      el.style.opacity = '0';
-      setTimeout(resolve, dur);
-    });
-  }
-</script>
-
-<!-- ============================================================
-  模块 6：交互状态机 <script data-module="app">
-  全局状态管理 + 事件绑定 + 主循环
-    状态：{ currentMBTI, selectedToken, isCardVisible, sessionHistory }
-    事件：
-      罗盘左右箭头  → 切换 MBTI 类型
-          罗盘本体点击  → 弹出/收起环形全览
-          环形选项点击  → 选中类型 + 收起面板
-          心笺点击      → 叩心：粒子 → 飞升 → 打字机 → 卡片
-          卡片外点击    → 归真：淡出 → 复位 → 清状态
-    入口：init()
-============================================================ -->
-<script data-module="app">
-  /* ═══════════════════════════════════════════════════
-     全局状态
-     ═══════════════════════════════════════════════════ */
-  var currentIndex = MBTI_TYPES.indexOf(DEFAULT_MBTI);
-  var isAnimating = false;
-  var isCardVisible = false;
-  var selectedTokenName = '';
-  var selectedMBTI = '';
-
-  /* ═══════════════════════════════════════════════════
-     更新罗盘显示
-     ═══════════════════════════════════════════════════ */
-  function updateDisplay() {
-    var display = document.getElementById('mbti-display');
-    if (!display) return;
-
-    display.textContent = MBTI_TYPES[currentIndex];
-    display.classList.add('text-switching');
-    setTimeout(function () {
-      display.classList.remove('text-switching');
-    }, 150);
-  }
-
-  /* ═══════════════════════════════════════════════════
-     箭头事件绑定
-     ═══════════════════════════════════════════════════ */
-  function bindEvents() {
-    var leftArrow = document.getElementById('arrow-left');
-    var rightArrow = document.getElementById('arrow-right');
-
-    if (leftArrow) {
-      leftArrow.addEventListener('click', function () {
-        if (isCardVisible) return;
-        currentIndex = (currentIndex - 1 + MBTI_TYPES.length) % MBTI_TYPES.length;
-        updateDisplay();
-      });
-    }
-
-    if (rightArrow) {
-      rightArrow.addEventListener('click', function () {
-        if (isCardVisible) return;
-        currentIndex = (currentIndex + 1) % MBTI_TYPES.length;
-        updateDisplay();
-      });
-    }
-
-    /* 键盘左右键 */
-    document.addEventListener('keydown', function (e) {
-      if (isCardVisible) return;
-      if (e.key === 'ArrowLeft') {
-        currentIndex = (currentIndex - 1 + MBTI_TYPES.length) % MBTI_TYPES.length;
-        updateDisplay();
-      } else if (e.key === 'ArrowRight') {
-        currentIndex = (currentIndex + 1) % MBTI_TYPES.length;
-        updateDisplay();
-      }
-    });
-
-    /* 罗盘点按：弹出/收起环形全览 */
-    var compassEl = document.getElementById('compass');
-    if (compassEl) {
-      compassEl.addEventListener('click', function (e) {
-        if (isCardVisible || isAnimating) return;
-        e.stopPropagation();
-        toggleRingPanel();
-      });
-    }
-
-    /* 令牌点击：启卦 */
-    var tokensContainer = document.getElementById('tokens-container');
-    if (tokensContainer) {
-      tokensContainer.addEventListener('click', function (e) {
-        var token = e.target.closest('.token');
-        if (!token || isAnimating || token.classList.contains('token--selected')) return;
-
-        isAnimating = true;
-
-        /* 粒子爆发 */
-        var rect = token.getBoundingClientRect();
-        var cx = rect.left + rect.width / 2;
-        var cy = rect.top + rect.height / 2;
-        createParticles(cx, cy);
-
-        /* 选中令牌飞升中央 */
-        var dx = window.innerWidth / 2 - cx;
-        var dy = window.innerHeight / 2 - cy;
-        token.style.transform = 'translate(' + dx.toFixed(1) + 'px, ' + dy.toFixed(1) + 'px) scale(1.8)';
-        token.classList.add('token--selected');
-
-        /* 其余令牌淡出 */
-        var siblings = tokensContainer.querySelectorAll('.token:not([data-token="' + token.getAttribute('data-token') + '"])');
-        for (var i = 0; i < siblings.length; i++) {
-          siblings[i].classList.add('token--dimmed');
-        }
-
-        selectedTokenName = token.getAttribute('data-token');
-        selectedMBTI = MBTI_TYPES[currentIndex];
-
-        setTimeout(function () {
-          isAnimating = false;
-          showReadingCard();
-        }, 800);
-      });
-    }
-
-    /* 归真：点击卡片外空白 */
-    document.addEventListener('click', function (e) {
-      if (!isCardVisible) return;
-      var card = document.getElementById('reading-card');
-      if (card && !card.contains(e.target)) {
-        resetToGuiZhen();
-      }
-    });
-  }
-
-  /* ═══════════════════════════════════════════════════
-     updateUI() 统一刷新（后续步骤扩展）
-     ═══════════════════════════════════════════════════ */
-  function updateUI() {
-    updateDisplay();
-  }
-
-  /* ═══════════════════════════════════════════════════
-     令牌复位（归真时调用）
-     ═══════════════════════════════════════════════════ */
-  function resetTokens() {
-    isAnimating = false;
-    var tokens = document.querySelectorAll('.token');
-    for (var i = 0; i < tokens.length; i++) {
-      tokens[i].classList.remove('token--selected', 'token--dimmed');
-      tokens[i].style.transform = '';
-      tokens[i].style.opacity = '';
-      tokens[i].style.transition = '';
-    }
-  }
-
-  /* ═══════════════════════════════════════════════════
-     观象：展开卡片 + 打字机 + 底部提示
-     ═══════════════════════════════════════════════════ */
-  async function showReadingCard() {
-    if (isCardVisible) return;
-    isCardVisible = true;
-
-    var reading = getReading(selectedMBTI, selectedTokenName);
-    if (!reading) {
-      isCardVisible = false;
-      resetTokens();
-      return;
-    }
-
-    var els = createReadingCard(selectedMBTI, selectedTokenName, reading);
-
-    /* 选中令牌淡出，让位给卡片 */
-    var selectedToken = document.querySelector('.token--selected');
-    if (selectedToken) {
-      selectedToken.style.transition = 'opacity 0.4s var(--easing)';
-      selectedToken.style.opacity = '0';
-    }
-
-    els.card.classList.add('reading-card--visible');
-
-    if (reading.time) {
-      await typewrite(els.timeEl, reading.time, TYPEWRITER_SPEED_TIME);
-    }
-
-    await typewrite(els.textEl, reading.text, TYPEWRITER_SPEED_TEXT);
-
-    els.hintEl.classList.add('card-hint--visible');
-    els.hintEl.style.animation = 'yunFadeIn 1s cubic-bezier(0.25,0.1,0.25,1) forwards';
-  }
-
-  /* ═══════════════════════════════════════════════════
-     归真：卡片淡出 → 令牌复位 → 清除历史
-     ═══════════════════════════════════════════════════ */
-  function resetToGuiZhen() {
-    if (!isCardVisible) return;
-    isCardVisible = false;
-
-    var card = document.getElementById('reading-card');
-    if (card) {
-      card.classList.remove('reading-card--visible');
-      setTimeout(function () {
-        if (card.parentNode) card.remove();
-      }, 500);
-    }
-
-    resetTokens();
-    resetSessionHistory();
-  }
-
-  /* ═══════════════════════════════════════════════════
-     入口
-     ═══════════════════════════════════════════════════ */
-  function init() {
-    createStarfield();
-    createHeroStars();
-    createShootingStar();
-    renderArrows();
-    renderCompass();
-    renderTokens();
-    renderRingPanel();
-    bindEvents();
-
-    /* 全局点击关闭环形面板 */
-    document.addEventListener('click', function (e) {
-      if (ringPanelVisible && ringPanelEl && !ringPanelEl.contains(e.target) && e.target.id !== 'compass' && !document.getElementById('compass').contains(e.target)) {
-        hideRingPanel();
-      }
-    });
-
-    /* 窗口尺寸变化时重建环形面板位置 */
-    window.addEventListener('resize', function () {
-      if (ringPanelVisible && typeof showRingPanel === 'function') showRingPanel();
-    });
-  }
-
-  document.addEventListener('DOMContentLoaded', init);
-</script>
-
-<!-- Service Worker -->
 <script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js');
-  }
-</script>
+/* ═══════════════════════════════════════════════
+   模块 1：配置常量
+   ═══════════════════════════════════════════════ */
+const DEFAULT_MBTI = 'INFP';
+const MBTI_TYPES = ['INFP','INFJ','INTJ','ENFP','ENFJ','ENTJ','ESFP','ESFJ','ESTP','ESTJ','ISFP','ISFJ','ISTP','ISTJ','INTP','ENTP'];
+const TOKENS = ['迷途','坎','执','散','渊','生'];
+const TOKEN_FLOAT = [-5,5]; /* ±5px */
+const TYPEWRITER_SPEED = 45; /* ms/字 */
+const PARTICLE_COUNT = 20;
+const TYPE_TAGS = {
+  INFP:'逍遥散人', INTJ:'弈天者', INFJ:'渡人舟', ENFP:'逐风客',
+  ENFJ:'掌灯人', ENTJ:'定海针', ESFP:'弄潮儿', ESFJ:'守灶人',
+  ESTP:'破阵子', ESTJ:'执尺人', ISFP:'抱琴客', ISFJ:'系铃人',
+  ISTP:'淬剑客', ISTJ:'守夜人', INTP:'观星客', ENTP:'纵火者'
+};
 
+/* ═══════════════════════════════════════════════
+   模块 2：文案数据
+   ═══════════════════════════════════════════════ */
+const TOKEN_DATA = {
+  INFP:{
+    迷途:[
+      {text:'雾中有路，只是眼看不见。闭上眼，用脚底去听——听那最细的根须如何选择泥土的方向。',time:'卯时初刻 · 晨露未晞'},
+      {text:'迷途本身或许就是归途。何必急着走出这片森林？林深处，才有别人不曾见过的月光。',time:'亥时三刻 · 月满西楼'}
+    ],
+    坎:[
+      {text:'水遇石则绕，遇崖则落。不是石头在挡你——是水还不知道自己要去哪。',time:'辰时二刻 · 云开雾散'},
+      {text:'低处的河流最清楚高山的重量。每道坎都是山在跟你说话。',time:'申时初刻 · 日影西斜'}
+    ],
+    执:[
+      {text:'手握得越紧，沙子流得越快。松开看看——掌心还有天空。',time:'午时正刻 · 烈日当空'},
+      {text:'执着是一根绳索，一头系着你，一头系着幻影。剪断哪头更疼？',time:'子时三刻 · 夜深人静'}
+    ],
+    散:[
+      {text:'云散了，山还在。你以为失去的，不过是被风吹散的形状。',time:'酉时二刻 · 归鸟入林'},
+      {text:'蒲公英从不规划自己的落点，但每一片都找到了泥土。',time:'巳时初刻 · 万物生发'}
+    ],
+    渊:[
+      {text:'深渊并不吞噬光——它只是让光学会沉默。在沉默里，你才能听见自己的回声。',time:'丑时二刻 · 万籁俱寂'},
+      {text:'站在渊边的人，比站在山顶的人更懂什么是高度。',time:'戌时初刻 · 暮色四合'}
+    ],
+    生:[
+      {text:'种子在破土之前，谁也不知道它是一棵树还是一朵花。生长本身就是答案。',time:'寅时三刻 · 黎明将至'},
+      {text:'活着不是奔跑，是像竹子一样——一节一节地往上，每节都留下一道痕。',time:'未时初刻 · 蝉鸣如雨'}
+    ]
+  },
+  INTJ:{
+    迷途:[{text:'迷途是棋局的一部分。真正的大师永远不会走丢——他们只是在计算下一手的位置。',time:'卯时初刻 · 晨露未晞'},{text:'方向比速度重要。站在原地看星图，胜过蒙头狂奔三百里。',time:'子时正刻 · 星河在天'}],
+    坎:[{text:'障碍是自然生成的过滤器。跨不过去的，原本就不属于你的路径。',time:'辰时三刻 · 云开雾散'},{text:'把坎当成台阶。踩上去，你的视野就会高于原来的平面。',time:'申时二刻 · 日影西斜'}],
+    执:[{text:'执着是一柄双刃剑。用它开路可以，但别让它成为你唯一握住的武器。',time:'午时初刻 · 烈日当空'},{text:'放手不是因为放弃了目标，而是找到了更优的策略。',time:'丑时初刻 · 万籁俱寂'}],
+    散:[{text:'分散是集中前的蓄力。拉弓越满，箭越快。',time:'酉时初刻 · 暮色初临'},{text:'你以为在散落，其实在布局。有些棋要到终局才看得懂。',time:'巳时二刻 · 万物生发'}],
+    渊:[{text:'深渊是最诚实的镜子。它不赞美你，不贬低你，只让你看见自己本来的模样。',time:'戌时三刻 · 夜色渐浓'},{text:'凝视深渊是危险的——但闭着眼睛走路更危险。',time:'寅时初刻 · 黎明将至'}],
+    生:[{text:'生长不是加法，是乘法。每一个决策都在复利。',time:'辰时初刻 · 晨光熹微'},{text:'生命最精妙的算法不是"更多"，而是"恰好"。',time:'未时三刻 · 蝉鸣渐息'}]
+  },
+  INFJ:{
+    迷途:[{text:'迷路的人往往在找别人。其实路一直在你心里，只是你还不敢走。',time:'卯时三刻 · 晨露未晞'},{text:'别怕走错。每一条路走到尽头，你都会发现自己。',time:'亥时初刻 · 月满西楼'}],
+    坎:[{text:'河水从不停下来问"为什么有石头"。它绕过，继续流淌，石头自然圆润。',time:'辰时初刻 · 云开见日'},{text:'每一道坎都是别人的故事在你生命里的回声。听完，就可以翻篇了。',time:'申时三刻 · 日影西斜'}],
+    执:[{text:'你执着的是那个人，还是被那个人看见的自己？',time:'午时二刻 · 烈日当空'},{text:'松开吧。掌心的温度比握住的沙更真实。',time:'子时初刻 · 夜深人静'}],
+    散:[{text:'散落不是破碎。是你把光分给了太多的角落，忘了留一盏给自己。',time:'酉时三刻 · 归鸟入林'},{text:'散开的花瓣会变成泥土，泥土会长出新的花。没有什么是真的失去。',time:'巳时初刻 · 万物生发'}],
+    渊:[{text:'你害怕的不是深渊，是站在深渊边时心里那个回音——它说的都是实话。',time:'丑时三刻 · 万籁俱寂'},{text:'深渊从不会主动拉人下去。是人在渊边站得太久，忘记身后还有路。',time:'戌时二刻 · 夜色渐浓'}],
+    生:[{text:'你生来不是为了照亮所有人。一盏灯点久了也会烫手。先温暖自己。',time:'寅时二刻 · 黎明将至'},{text:'生命最温柔的奇迹不是开花，是愿意在黑暗的泥土里等。',time:'未时二刻 · 蝉鸣如雨'}]
+  },
+  ENFP:{
+    迷途:[{text:'迷路了？太好了！未知是冒险的另一个名字。',time:'卯时二刻 · 晨露未晞'},{text:'没有地图的路才是你的路。别人走过的，只是风景。',time:'亥时二刻 · 月色如水'}],
+    坎:[{text:'坎是惊喜的门槛——跨过去之前你永远不知道另一边有什么。',time:'辰时初刻 · 云开见日'},{text:'石头挡路？踩上去，看得更远。',time:'申时初刻 · 日影西斜'}],
+    执:[{text:'你执着的是热情本身。但当风变了方向，帆也要调整。',time:'午时三刻 · 烈日当空'},{text:'放下一个执念，才能拿起一百个新的可能。',time:'子时二刻 · 夜深人静'}],
+    散:[{text:'你是烟花——散开的每一点都是光。不需要收拢成一个形状。',time:'酉时初刻 · 暮色初临'},{text:'散落不是迷失，是播种。你走过的每一处都会开花。',time:'巳时三刻 · 万物生发'}],
+    渊:[{text:'深渊只是很深很深的天空。换个角度看，你在飞翔。',time:'丑时初刻 · 万籁俱寂'},{text:'别在渊边发呆——扔一颗石头下去，听听回声有多深。那才是你。',time:'戌时初刻 · 暮色四合'}],
+    生:[{text:'活着就是不断燃烧。烧完了？没关系，太阳明天还会升起。',time:'寅时初刻 · 黎明将至'},{text:'生命不是填空题，是涂鸦——想画什么就画什么。',time:'未时初刻 · 蝉鸣初起'}]
+  }
+};
+let sessionHistory = {};
+
+function getReading(mbti, token) {
+  const typeData = TOKEN_DATA[mbti];
+  if (!typeData) return null;
+  const entries = typeData[token];
+  if (!entries || !entries.length) return null;
+  const key = mbti + '_' + token;
+  if (!sessionHistory[key]) sessionHistory[key] = [];
+  const shown = sessionHistory[key];
+  const available = entries.filter(function(_, i) { return shown.indexOf(i) === -1; });
+  if (!available.length) { sessionHistory[key] = []; available.push.apply(available, entries); }
+  const pick = available[Math.floor(Math.random() * available.length)];
+  shown.push(entries.indexOf(pick));
+  return pick;
+}
+function resetSessionHistory() { sessionHistory = {}; }
+
+/* ═══════════════════════════════════════════════
+   模块 3：Canvas 星图（替代 680 颗 CSS box-shadow）
+   ═══════════════════════════════════════════════ */
+(function() {
+  const canvas = document.getElementById('starfield');
+  const ctx = canvas.getContext('2d');
+  let W, H, cx, cy;
+
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    cx = W / 2; cy = H / 2;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  /* 星层定义 — 数量按屏幕缩放 */
+  function scaleCount(base) {
+    if (W <= 480) return Math.ceil(base * 0.2);
+    if (W <= 768) return Math.ceil(base * 0.35);
+    return base;
+  }
+
+  const layerDefs = [
+    { base: 380, speed: 0.015, radius: 350, color: [175,195,215], alpha: 0.18 },
+    { base: 180, speed: 0.025, radius: 450, color: [185,205,225], alpha: 0.28 },
+    { base: 90,  speed: 0.038, radius: 550, color: [200,215,235], alpha: 0.38 },
+    { base: 30,  speed: 0.050, radius: 650, color: [210,225,240], alpha: 0.25 }
+  ];
+
+  const stars = [];
+  layerDefs.forEach(function(ld) {
+    const count = scaleCount(ld.base);
+    for (let i = 0; i < count; i++) {
+      stars.push({
+        angle: Math.random() * Math.PI * 2,
+        dist: 100 + Math.random() * (ld.radius - 100),
+        speed: ld.speed * (0.6 + Math.random() * 0.8),
+        size: 0.6 + Math.random() * 1.8,
+        color: ld.color,
+        alpha: ld.alpha * (0.5 + Math.random() * 1.0)
+      });
+    }
+  });
+
+  /* 亮星（固定位置闪烁） */
+  const heroStars = [];
+  for (let i = 0; i < 8; i++) {
+    heroStars.push({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      size: 1.5 + Math.random() * 2.5,
+      alpha: 0.6 + Math.random() * 0.4,
+      period: 2 + Math.random() * 4,
+      phase: Math.random() * Math.PI * 2
+    });
+  }
+
+  function draw(t) {
+    ctx.fillStyle = '#0D0D14';
+    ctx.fillRect(0, 0, W, H);
+
+    /* 星云辉光 */
+    const g1 = ctx.createRadialGradient(cx * 0.56, cy * 0.7, 0, cx * 0.56, cy * 0.7, W * 0.5);
+    g1.addColorStop(0, 'rgba(40,20,60,0.06)');
+    g1.addColorStop(1, 'rgba(40,20,60,0)');
+    ctx.fillStyle = g1;
+    ctx.fillRect(0, 0, W, H);
+
+    /* 旋转星点 */
+    stars.forEach(function(s) {
+      s.angle += s.speed * 0.001;
+      const x = cx + Math.cos(s.angle) * s.dist;
+      const y = cy + Math.sin(s.angle) * s.dist;
+      /* 边缘裁剪 — 不出屏幕 */
+      if (x < -50 || x > W + 50 || y < -50 || y > H + 50) return;
+      ctx.fillStyle = 'rgba(' + s.color[0] + ',' + s.color[1] + ',' + s.color[2] + ',' + s.alpha.toFixed(2) + ')';
+      ctx.beginPath();
+      ctx.arc(x, y, s.size, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    /* 亮星闪烁 */
+    if (W <= 768) { requestAnimationFrame(draw); return; } /* 小屏跳过高开销闪烁 */
+    heroStars.forEach(function(h) {
+      const pulse = 0.5 + 0.5 * Math.sin(t * 0.001 * (2 * Math.PI / h.period) + h.phase);
+      ctx.fillStyle = 'rgba(210,225,245,' + (h.alpha * pulse).toFixed(2) + ')';
+      ctx.beginPath();
+      ctx.arc(h.x, h.y, h.size, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowColor = 'rgba(210,225,245,' + (h.alpha * pulse * 0.5).toFixed(2) + ')';
+      ctx.shadowBlur = h.size * 3;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    });
+
+    requestAnimationFrame(draw);
+  }
+  requestAnimationFrame(draw);
+})();
+
+/* ═══════════════════════════════════════════════
+   模块 4：渲染（心笺 + 环形面板 + 卡片）
+   ═══════════════════════════════════════════════ */
+function renderTokens() {
+  const container = document.getElementById('tokens-container');
+  if (!container) return;
+  const durations = [3.2, 3.6, 3.0, 3.8, 3.3, 3.5];
+  const delays = [0, 0.5, 1.0, 1.5, 0.3, 0.8];
+  TOKENS.forEach(function(name, i) {
+    const t = document.createElement('div');
+    t.className = 'token';
+    t.setAttribute('data-token', name);
+    t.textContent = name;
+    t.style.setProperty('--fd', durations[i] + 's');
+    t.style.setProperty('--fdel', delays[i] + 's');
+    t.style.setProperty('--fa', ((TOKEN_FLOAT[0] + Math.random() * (TOKEN_FLOAT[1] - TOKEN_FLOAT[0]))|0) + 'px');
+    container.appendChild(t);
+  });
+}
+
+/* 环形面板 */
+let ringPanel = null, ringVisible = false;
+function buildRingPanel() {
+  if (ringPanel) return;
+  ringPanel = document.createElement('div');
+  ringPanel.className = 'ring-panel';
+  ringPanel.id = 'ring-panel';
+  const bd = document.createElement('div');
+  bd.className = 'ring-backdrop';
+  bd.addEventListener('click', hideRing);
+  ringPanel.appendChild(bd);
+  document.body.appendChild(ringPanel);
+}
+function showRing() {
+  if (!ringPanel) buildRingPanel();
+  const compass = document.getElementById('compass');
+  if (!compass) return;
+  const r = compass.getBoundingClientRect();
+  const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+  const radius = r.width * 0.6;
+  /* 清除旧选项 */
+  ringPanel.querySelectorAll('.ring-option').forEach(function(o) { o.remove(); });
+  MBTI_TYPES.forEach(function(type, i) {
+    const angle = (i / MBTI_TYPES.length) * 2 * Math.PI - Math.PI / 2;
+    const x = cx + radius * Math.cos(angle);
+    const y = cy + radius * Math.sin(angle);
+    const opt = document.createElement('div');
+    opt.className = 'ring-option';
+    opt.textContent = type + ' · ' + (TYPE_TAGS[type] || '');
+    opt.setAttribute('data-mbti', type);
+    opt.style.left = x + 'px';
+    opt.style.top = y + 'px';
+    opt.style.setProperty('--rd', (i * 0.03) + 's');
+    if (type === MBTI_TYPES[currentIndex]) opt.classList.add('ring-option--active');
+    opt.addEventListener('click', function(e) {
+      e.stopPropagation();
+      currentIndex = MBTI_TYPES.indexOf(this.getAttribute('data-mbti'));
+      updateDisplay();
+      hideRing();
+    });
+    ringPanel.appendChild(opt);
+  });
+  ringPanel.classList.add('ring-panel--visible');
+  ringVisible = true;
+}
+function hideRing() {
+  if (!ringPanel) return;
+  ringPanel.classList.remove('ring-panel--visible');
+  ringVisible = false;
+}
+
+function createReadingCard(mbti, token, reading) {
+  const old = document.querySelector('.reading-card');
+  if (old) old.remove();
+  const card = document.createElement('div');
+  card.className = 'reading-card';
+  card.id = 'reading-card';
+  const tag = document.createElement('div');
+  tag.className = 'card-tag';
+  tag.textContent = mbti + ' · ' + (TYPE_TAGS[mbti] || '');
+  const time = document.createElement('div');
+  time.className = 'card-time';
+  const text = document.createElement('div');
+  text.className = 'card-text';
+  const hint = document.createElement('div');
+  hint.className = 'card-hint';
+  hint.textContent = '道法自然，不必执着 · 点击空白处返回';
+  card.appendChild(tag);
+  card.appendChild(time);
+  card.appendChild(text);
+  card.appendChild(hint);
+  document.body.appendChild(card);
+  return { card: card, timeEl: time, textEl: text, hintEl: hint };
+}
+
+/* 打字机 */
+function typewrite(el, text, speed) {
+  return new Promise(function(resolve) {
+    el.textContent = '';
+    let i = 0;
+    function tick() {
+      if (i >= text.length) { resolve(); return; }
+      el.textContent += text[i];
+      i++;
+      setTimeout(tick, speed);
+    }
+    tick();
+  });
+}
+
+/* 粒子 */
+function burstParticles(cx, cy) {
+  for (let i = 0; i < PARTICLE_COUNT; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.left = cx + 'px';
+    p.style.top = cy + 'px';
+    const angle = Math.random() * 2 * Math.PI;
+    const dist = 50 + Math.random() * 120;
+    p.style.setProperty('--px', (Math.cos(angle) * dist).toFixed(1) + 'px');
+    p.style.setProperty('--py', (Math.sin(angle) * dist).toFixed(1) + 'px');
+    document.body.appendChild(p);
+  }
+  setTimeout(function() {
+    document.querySelectorAll('.particle').forEach(function(p) { p.remove(); });
+  }, 800);
+}
+
+/* ═══════════════════════════════════════════════
+   模块 5：交互状态机
+   ═══════════════════════════════════════════════ */
+let currentIndex = 0; /* INFP = index 0 */
+let isAnimating = false;
+let isCardVisible = false;
+let selectedTokenName = '';
+let selectedMBTI = '';
+
+function updateDisplay() {
+  const d = document.getElementById('mbti-display');
+  if (!d) return;
+  d.textContent = MBTI_TYPES[currentIndex];
+  d.classList.add('text-switch');
+  setTimeout(function() { d.classList.remove('text-switch'); }, 150);
+}
+
+function resetTokens() {
+  isAnimating = false;
+  document.querySelectorAll('.token').forEach(function(t) {
+    t.classList.remove('token--selected', 'token--dimmed');
+    t.style.transform = '';
+    t.style.opacity = '';
+    t.style.transition = '';
+  });
+}
+
+async function showReadingCard() {
+  if (isCardVisible) return;
+  isCardVisible = true;
+  const reading = getReading(selectedMBTI, selectedTokenName);
+  if (!reading) { isCardVisible = false; resetTokens(); return; }
+  const els = createReadingCard(selectedMBTI, selectedTokenName, reading);
+  /* 隐藏选中令牌 */
+  const sel = document.querySelector('.token--selected');
+  if (sel) { sel.style.transition = 'opacity .4s var(--ease)'; sel.style.opacity = '0'; }
+  els.card.classList.add('reading-card--visible');
+  if (reading.time) await typewrite(els.timeEl, reading.time, TYPEWRITER_SPEED);
+  await typewrite(els.textEl, reading.text, TYPEWRITER_SPEED);
+  els.hintEl.classList.add('card-hint--visible');
+}
+
+function resetToGuiZhen() {
+  if (!isCardVisible) return;
+  isCardVisible = false;
+  const card = document.getElementById('reading-card');
+  if (card) { card.classList.remove('reading-card--visible'); setTimeout(function() { if (card.parentNode) card.remove(); }, 500); }
+  resetTokens();
+  resetSessionHistory();
+}
+
+/* 事件绑定 */
+function bindEvents() {
+  document.getElementById('arrow-left').addEventListener('click', function() {
+    if (isCardVisible) return;
+    currentIndex = (currentIndex - 1 + MBTI_TYPES.length) % MBTI_TYPES.length;
+    updateDisplay();
+  });
+  document.getElementById('arrow-right').addEventListener('click', function() {
+    if (isCardVisible) return;
+    currentIndex = (currentIndex + 1) % MBTI_TYPES.length;
+    updateDisplay();
+  });
+  document.addEventListener('keydown', function(e) {
+    if (isCardVisible) return;
+    if (e.key === 'ArrowLeft') { currentIndex = (currentIndex - 1 + MBTI_TYPES.length) % MBTI_TYPES.length; updateDisplay(); }
+    if (e.key === 'ArrowRight') { currentIndex = (currentIndex + 1) % MBTI_TYPES.length; updateDisplay(); }
+  });
+
+  /* 罗盘点按 → 环形面板 */
+  document.getElementById('compass').addEventListener('click', function(e) {
+    if (isCardVisible || isAnimating) return;
+    e.stopPropagation();
+    ringVisible ? hideRing() : showRing();
+  });
+
+  /* 心笺点击 → 叩心 */
+  document.getElementById('tokens-container').addEventListener('click', function(e) {
+    const token = e.target.closest('.token');
+    if (!token || isAnimating || token.classList.contains('token--selected')) return;
+    isAnimating = true;
+
+    const rect = token.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    burstParticles(cx, cy);
+
+    /* 飞升中央 */
+    const dx = window.innerWidth / 2 - cx;
+    const dy = window.innerHeight / 2 - cy;
+    token.style.transform = 'translate(' + dx.toFixed(1) + 'px, ' + dy.toFixed(1) + 'px) scale(1.8)';
+    token.classList.add('token--selected');
+
+    /* 其余淡出 */
+    const name = token.getAttribute('data-token');
+    document.querySelectorAll('.token:not([data-token="' + name + '"])').forEach(function(t) {
+      t.classList.add('token--dimmed');
+    });
+
+    selectedTokenName = name;
+    selectedMBTI = MBTI_TYPES[currentIndex];
+
+    setTimeout(function() {
+      isAnimating = false;
+      showReadingCard();
+    }, 800);
+  });
+
+  /* 归真 */
+  document.addEventListener('click', function(e) {
+    if (!isCardVisible) return;
+    const card = document.getElementById('reading-card');
+    if (card && !card.contains(e.target)) resetToGuiZhen();
+  });
+
+  /* 窗口缩放更新环形面板 */
+  window.addEventListener('resize', function() {
+    if (ringVisible && ringPanel) {
+      ringPanel.classList.remove('ring-panel--visible');
+      ringVisible = false;
+    }
+  });
+}
+
+/* 入口 */
+renderTokens();
+bindEvents();
+updateDisplay();
+</script>
 </body>
 </html>
