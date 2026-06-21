@@ -46,9 +46,9 @@ main{
 
 /* 箭头 */
 .ar{
-  width:52px;height:52px;flex-shrink:0;
+  width:64px;height:64px;flex-shrink:0;
   display:grid;place-items:center;
-  font-size:30px;color:var(--brz);cursor:pointer;
+  font-size:36px;color:var(--brz);cursor:pointer;
   transition:color .15s
 }
 .ar:active{color:var(--brzL)}
@@ -112,15 +112,15 @@ main{
     linear-gradient(180deg,var(--pprD),var(--ppr) 30%,var(--pprL) 50%,var(--ppr) 70%,var(--pprD));
   border:1px solid rgba(70,50,20,.18);
   box-shadow:0 3px 16px rgba(0,0,0,.35),inset 0 0 36px rgba(70,50,20,.03);
-  display:grid;place-items:center;
-  writing-mode:vertical-rl;text-orientation:upright;
-  font-size:30px;font-weight:bold;color:var(--ink);letter-spacing:6px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:30px;font-weight:bold;color:var(--ink);letter-spacing:0;
   cursor:pointer;
   animation:tkF var(--fd) ease-in-out infinite;
   animation-delay:var(--fdel);
   transition:transform .35s var(--ease),opacity .35s var(--ease),box-shadow .25s;
   text-shadow:0 0 3px rgba(60,16,16,.4),0 0 10px rgba(60,16,16,.12)
 }
+.tk span{writing-mode:vertical-rl;letter-spacing:6px}
 @keyframes tkF{0%,100%{transform:translateY(0)}50%{transform:translateY(var(--fa))}}
 .tk:active{color:var(--cin);text-shadow:0 0 14px rgba(196,30,58,.4),0 0 28px rgba(196,30,58,.18);box-shadow:0 6px 24px rgba(196,30,58,.1),0 2px 8px rgba(0,0,0,.4);border-color:rgba(196,30,58,.25)}
 .tk--s{animation:none!important;z-index:50;transition:transform .8s var(--ease),opacity .8s var(--ease)}
@@ -264,7 +264,8 @@ function gR(m,tk){
 var tkC=document.getElementById('tc');
 var ds=[3.2,3.6,3,3.8,3.3,3.5],dl=[0,.5,1,1.5,.3,.8];
 T.forEach(function(n,i){
-  var e=document.createElement('div');e.className='tk';e.setAttribute('data-tk',n);e.textContent=n;
+  var e=document.createElement('div');e.className='tk';e.setAttribute('data-tk',n);
+  var s=document.createElement('span');s.textContent=n;e.appendChild(s);
   e.style.setProperty('--fd',ds[i]+'s');e.style.setProperty('--fdel',dl[i]+'s');
   e.style.setProperty('--fa',((TA[0]+Math.random()*(TA[1]-TA[0]))|0)+'px');
   tkC.appendChild(e)
